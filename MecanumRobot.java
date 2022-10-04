@@ -215,6 +215,34 @@ public class  MecanumRobot
     degree = degree / 3.75; // TURN DEGREE IN TO INCHES
     encoderDrive(TURN_SPEED,degree, -degree, degree/2);
   }
+  // Claw Methods
+  void openClaw()
+  {
+
+
+    claw.setPosition(0.0);
+    op.telemetry.addData("Servo", "0.0");
+    op.telemetry.update();
+    runtime.reset();
+    while (op.opModeIsActive() && (runtime.seconds() < 1.0))
+    {
+      op.telemetry.addData("Servo", "Open 0.0: %2.5f S Elapsed", runtime.seconds());
+      op.telemetry.update();
+    }
+  }
+
+  void closeClaw() {
+
+    claw.setPosition(0.5);
+    op.telemetry.addData("Servo", "1.0");
+    op.telemetry.update();
+    runtime.reset();
+    while (op.opModeIsActive() && (runtime.seconds() < 1.0)) {
+      op.telemetry.addData("Servo", "Close.0: %2.5f S Elapsed", runtime.seconds());
+      op.telemetry.update();
+    }
+  }
+
 
 
 
