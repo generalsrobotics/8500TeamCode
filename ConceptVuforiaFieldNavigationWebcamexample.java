@@ -292,15 +292,33 @@
                 if (targetFound != null) {
                     if (targetFound.equals(allTrackables.get(1))) { // if target is parking 2
                         robot.driveForwards(24);
+                        level1();
                     } else if (targetFound.equals(allTrackables.get(2))) {// if target is parking 3
                         robot.slideRight(30);
                         robot.driveForwards(34);
+                        level2();
                     } else if (targetFound.equals(allTrackables.get(0))) {
                         robot.slideLeft(24);
                         robot.driveForwards(45.5);
-                        ;
+                        level3();
                     }
                 }
+            }
+
+            void level1(){
+                robot.moveArm(50);
+                robot.driveForwards(5);
+                robot.openClaw();
+            }
+            void level2(){
+                robot.moveArm(70);
+                robot.driveForwards(5);
+                robot.openClaw();
+            }
+            void level3(){
+                robot.moveArm(90);
+                robot.driveForwards(5);
+                robot.openClaw();
             }
 
 
