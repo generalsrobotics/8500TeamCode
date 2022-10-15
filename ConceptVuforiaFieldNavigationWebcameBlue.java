@@ -30,23 +30,16 @@
         package org.firstinspires.ftc.teamcode;
 
         import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-        import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
         import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XZY;
         import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 
         import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-        import com.qualcomm.robotcore.eventloop.opmode.Disabled;
         import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-        import com.qualcomm.robotcore.hardware.DcMotor;
-        import com.qualcomm.robotcore.hardware.HardwareMap;
-        import com.qualcomm.robotcore.hardware.Servo;
         import com.qualcomm.robotcore.util.ElapsedTime;
 
         import org.firstinspires.ftc.robotcore.external.ClassFactory;
         import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
         import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-        import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
         import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
         import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
         import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -80,9 +73,9 @@
          * is explained below.
          */
 
-        @Autonomous(name="Vuforia Field Nav Webcam", group ="Concept")
+        @Autonomous(name="Blue Autonomous", group ="Concept")
 
-        public class ConceptVuforiaFieldNavigationWebcamexample extends LinearOpMode {
+        public class ConceptVuforiaFieldNavigationWebcameBlue extends LinearOpMode {
 
             /*
              * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
@@ -114,6 +107,8 @@
             private WebcamName webcamName = null;
             private MecanumRobot robot = new MecanumRobot();
             private List<VuforiaTrackable> allTrackables;
+            private ElapsedTime runtime = new ElapsedTime();
+
             VuforiaTrackable targetFound = null;
 
 
@@ -175,9 +170,8 @@
                  */
 
                 // Name and locate each trackable object
-                allTrackables.get(0).setName("parking1");
-                allTrackables.get(2).setName("parking3");
-                allTrackables.get(1).setName("parking2");
+                allTrackables.get(1).setName("parking3");
+                allTrackables.get(0).setName("parking2");
                 // allTrackables.get(3).setName("parking4");
                 //identifyTarget(0, "Red Audience Wall",   -halfField,  -oneAndHalfTile, mmTargetHeight, 90, 0,  90);
 //        identifyTarget(1, "Red Rear Wall",        halfField,  -oneAndHalfTile, mmTargetHeight, 90, 0, -90);
@@ -236,6 +230,8 @@
 
                 targets.activate();
                 while (!isStopRequested()) {
+                    telemetry.addData("RUNTIME",runtime.seconds());
+                    telemetry.update();
                     int count = 0;
                     // check all the trackable targets to see which one (if any) is visible.
                     targetVisible = false;
@@ -258,30 +254,37 @@
                         count++;
                     }
                     // Provide feedback as of which target its has found
+
                     if (targetVisible) {
-                        if (targetFound.equals(allTrackables.get(1))) {// parking 2
+                        if (targetFound.equals(allTrackables.get(0))) {// parking 2
                             telemetry.addData("Robot is parking to %s", targetName);
-                            telemetry.update();
-                            waitForStart();
-                            robot.driveForwards(24);
-                            break;
-
-                        } else if (targetFound.equals(allTrackables.get(2))) {//parking 3
-                            telemetry.addData("Robot is parking to %s", targetName);
-                            telemetry.update();
-                            waitForStart();
-                            robot.slideRight(30);
-                            robot.driveForwards(34);
-
-                            break;
-                        } else if (targetFound.equals(allTrackables.get(0))) {
-                            telemetry.addData("no target visible", "");
                             telemetry.update();
                             waitForStart();
                             park();
                             break;
-                        }
 
+                        } else if (targetFound.equals(allTrackables.get(1))) {//parking 3
+                            telemetry.addData("Robot is parking to %s", targetName);
+                            telemetry.update();
+                            waitForStart();
+                            park();
+
+                            break;
+                        }
+//                        else if (targetFound.equals(allTrackables.get(0))) {
+//                            telemetry.addData("no target visible", "");
+//                            telemetry.update();
+//                            waitForStart();
+//                            park();
+//                            break;
+//                        }
+
+                    }else if( targetVisible == false && runtime.seconds() > 10 ){// parking 1
+                        telemetry.addData("no target visible going to parking 1", "");
+                        telemetry.update();
+                        waitForStart();
+                        park();
+                        break;
                     }
                 }
             }
@@ -290,33 +293,35 @@
 
             void park() {
                 if (targetFound != null) {
-                    if (targetFound.equals(allTrackables.get(1))) { // if target is parking 2
-                        robot.driveForwards(24);
-                        level1();
-                    } else if (targetFound.equals(allTrackables.get(2))) {// if target is parking 3
-                        robot.slideRight(30);
-                        robot.driveForwards(34);
-                        level2();
-                    } else if (targetFound.equals(allTrackables.get(0))) {
-                        robot.slideLeft(24);
-                        robot.driveForwards(45.5);
-                        level3();
-                    }
-                }
-            }
+                    if (targetFound.equals(allTrackables.get(0))) { // if target is parking 2
+                        //robot.driveForwards(24);
+                        robot.slideLeft(30);
 
+                        //level1();
+                    } else if (targetFound.equals(allTrackables.get(1))) {// if target is parking 3
+                        robot.slideLeft(30);
+                        robot.driveForwards(34);
+                        //level2();
+                    }
+                } else { // parking 1
+                    robot.slideRight(24);
+                    robot.driveForwards(45.5);
+                    //level3();
+                }
+
+            }
             void level1(){
-                robot.moveArm(50);
+               // robot.moveArm(50);
                 robot.driveForwards(5);
                 robot.openClaw();
             }
             void level2(){
-                robot.moveArm(70);
+               // robot.moveArm(70);
                 robot.driveForwards(5);
                 robot.openClaw();
             }
             void level3(){
-                robot.moveArm(90);
+               // robot.moveArm(90);
                 robot.driveForwards(5);
                 robot.openClaw();
             }

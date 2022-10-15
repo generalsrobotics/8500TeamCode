@@ -67,7 +67,7 @@
     public DcMotor  frontRight  = null;
     public DcMotor  backLeft   = null;
     public DcMotor  backRight  = null;
-    public DcMotor  arm     = null;
+    //public DcMotor  arm     = null;
     public DigitalChannel tSensor = null;
     public DcMotor  LED     = null;
     public Servo    claw    = null;
@@ -98,7 +98,7 @@
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
     private LinearOpMode op = null;
-    private ElapsedTime runtime  = new ElapsedTime();
+    public static ElapsedTime runtime  = new ElapsedTime();
     private ElapsedTime ledTimer  = new ElapsedTime();
 
     /* Constructor */
@@ -119,8 +119,8 @@
       backLeft = hwMap.dcMotor.get("backLeft");
       frontRight = hwMap.dcMotor.get("frontRight");
       backRight = hwMap.dcMotor.get("backRight");
-      arm = hwMap.dcMotor.get("arm");
-      tSensor = hwMap.get(DigitalChannel.class,"touch_sensor");
+     //arm = hwMap.dcMotor.get("arm");
+     // tSensor = hwMap.get(DigitalChannel.class,"touch_sensor");
       // LED = hwMap.dcMotor.get("LED");
 
 
@@ -136,7 +136,7 @@
       frontRight.setPower(0);
       backLeft.setPower(0);
       backRight.setPower(0);
-      arm.setPower(0);
+    //  arm.setPower(0);
 
       // Set all motors to run without encoders.
       // May want to use RUN_USING_ENCODERS if encoders are installed.
@@ -149,17 +149,17 @@
 
       backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
       backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-      arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+     // arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-      tSensor.setMode(DigitalChannel.Mode.INPUT);
+     // tSensor.setMode(DigitalChannel.Mode.INPUT);
 
       // Motors Positions
       double  backRightPos = backRight.getCurrentPosition();
       double  frontRightPos = backRight.getCurrentPosition();
       double  frontLeftPos = backRight.getCurrentPosition();
       double  backLeftPos = backRight.getCurrentPosition();
-      startPos = arm.getCurrentPosition();
-      double  armPos = arm.getCurrentPosition();
+      //startPos = arm.getCurrentPosition();
+      //double  armPos = arm.getCurrentPosition();
 
 
 
@@ -171,7 +171,7 @@
       backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
-      arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+      //arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
       // Define and initialize ALL installed servos.
@@ -194,13 +194,13 @@
       driveBackwardsWithEncoder(inches);
     }
     void moveArm(double inches){
-      armEncoder(.5,inches, inches/2);
-      arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+     // armEncoder(.5,inches, inches/2);
+     // arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
-    boolean isPressed(){
-      return tSensor.getState() == false;
-    }
+//    boolean isPressed(){
+//      return tSensor.getState() == false;
+//    }
 
     void driveForwards(double inches){
       driveForwardsWithEncoder(inches);
@@ -427,56 +427,56 @@
       }
 
     }
-    void armEncoder(double speed, double armInches, double timeoutS ){
-
-      int armTarget;
-      armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH_FOR_ARM);
-
-      if (op.opModeIsActive()) {
-
-        // Determine new target position, and pass to motor controller
-        armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH);
-
-
-        arm.setTargetPosition(armTarget);
-
-        // Turn On RUN_TO_POSITION
-        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-
-        // reset the timeout time and start motion.
-        runtime.reset();
-        arm.setPower(Math.abs(speed));
-
-
-
-        // keep looping while we are still active, and there is time left, and both motors are running.
-        // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
-        // its target position, the motion will stop.  This is "safer" in the event that the robot will
-        // always end the motion as soon as possible.
-        // However, if you require that BOTH motors have finished their moves before the robot continues
-        // onto the next step, use (isBusy() || isBusy()) in the loop test.
-        while (op.opModeIsActive() && (runtime.seconds() < timeoutS) &&(arm.isBusy() ) ) {
-
-
-          // Display it for the driver.
-          op.telemetry.addData("armMotor:",  "Running to %7d :%7d", arm.getCurrentPosition(),armTarget);
-
-          op.telemetry.update();
-        }
-
-        // Stop all motion;
-
-        arm.setPower(0);
-
-
-        // Turn off RUN_TO_POSITION
-
-        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        //  sleep(250);   // optional pause after each move
-      }
-    }
+//    void armEncoder(double speed, double armInches, double timeoutS ){
+//
+//      int armTarget;
+//      armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH_FOR_ARM);
+//
+//      if (op.opModeIsActive()) {
+//
+//        // Determine new target position, and pass to motor controller
+//        armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH);
+//
+//
+//        arm.setTargetPosition(armTarget);
+//
+//        // Turn On RUN_TO_POSITION
+//        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
+//
+//        // reset the timeout time and start motion.
+//        runtime.reset();
+//        arm.setPower(Math.abs(speed));
+//
+//
+//
+//        // keep looping while we are still active, and there is time left, and both motors are running.
+//        // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+//        // its target position, the motion will stop.  This is "safer" in the event that the robot will
+//        // always end the motion as soon as possible.
+//        // However, if you require that BOTH motors have finished their moves before the robot continues
+//        // onto the next step, use (isBusy() || isBusy()) in the loop test.
+//        while (op.opModeIsActive() && (runtime.seconds() < timeoutS) &&(arm.isBusy() ) ) {
+//
+//
+//          // Display it for the driver.
+//          op.telemetry.addData("armMotor:",  "Running to %7d :%7d", arm.getCurrentPosition(),armTarget);
+//
+//          op.telemetry.update();
+//        }
+//
+//        // Stop all motion;
+//
+//        arm.setPower(0);
+//
+//
+//        // Turn off RUN_TO_POSITION
+//
+//        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//        //  sleep(250);   // optional pause after each move
+//      }
+//    }
     void slideRightWithEncoders(double inches){
       // Rule: encoderSlide(speed, inches(make negative to slideleft), inches( make negative to slideright), runtime)
       encoderSlide(FORWARD_SPEED, -inches, inches, inches/2);
