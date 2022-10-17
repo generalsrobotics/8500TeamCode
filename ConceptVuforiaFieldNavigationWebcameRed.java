@@ -109,7 +109,7 @@
             private List<VuforiaTrackable> allTrackables;
             private ElapsedTime runtime = new ElapsedTime();
 
-            VuforiaTrackable targetFound = null;
+            VuforiaTrackable targetFound;
 
 
             private boolean targetVisible = false;
@@ -148,8 +148,7 @@
                 targets = this.vuforia.loadTrackablesFromAsset("testq");
 
                 // For convenience, gather together all the trackable objects in one easily-iterable collection */
-                List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-                allTrackables.addAll(targets);
+                List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>(targets);
 
                 /**
                  * In order for localization to work, we need to tell the system where each target is on the field, and
@@ -230,12 +229,11 @@
 
                 targets.activate();
                 while (!isStopRequested()) {
-                    telemetry.addData("RUNTIME",runtime.seconds());
+                    telemetry.addData("RUNTIME", runtime.seconds());
                     telemetry.update();
                     int count = 0;
                     // check all the trackable targets to see which one (if any) is visible.
                     targetVisible = false;
-                    VuforiaTrackable targetFound = null;
                     for (VuforiaTrackable trackable : allTrackables) {
                         if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
                             telemetry.addData("Visible Target", trackable.getName());
@@ -259,7 +257,6 @@
                         if (targetFound.equals(allTrackables.get(0))) {// parking 2
                             telemetry.addData("Robot is parking to %s", targetName);
                             telemetry.update();
-                            waitForStart();
                             park();
                             break;
 
@@ -272,7 +269,7 @@
                             break;
                         }
 
-                    }else if( targetVisible == false && runtime.seconds() > 10 ){
+                    } else if (targetVisible == false && runtime.seconds() > 10) {
                         telemetry.addData("no target visible", "");
                         telemetry.update();
                         waitForStart();
@@ -283,15 +280,14 @@
             }
 
 
-
             void park() {
                 if (targetFound != null) {
-                    if (targetFound.equals(allTrackables.get(0))) { // if target is parking 2
+                    if (targetName.equals("parking2")) { // if target is parking 2
                         //robot.driveForwards(24);
                         robot.slideRight(30);
 
                         //level1();
-                    } else if (targetFound.equals(allTrackables.get(1))) {// if target is parking 3
+                    } else if (targetName.equals("parking3")){// if target is parking 3
                         robot.slideRight(30);
                         robot.driveForwards(34);
                         //level2();
@@ -303,25 +299,26 @@
                 }
 
             }
-
-            void level1(){
-               // robot.moveArm(50);
-                robot.driveForwards(5);
-                robot.openClaw();
-            }
-            void level2(){
-               // robot.moveArm(70);
-                robot.driveForwards(5);
-                robot.openClaw();
-            }
-            void level3(){
-               // robot.moveArm(90);
-                robot.driveForwards(5);
-                robot.openClaw();
-            }
-
-
         }
+
+//            void level1(){
+//               // robot.moveArm(50);
+//                robot.driveForwards(5);
+//                robot.openClaw();
+//            }
+//            void level2(){
+//               // robot.moveArm(70);
+//                robot.driveForwards(5);
+//                robot.openClaw();
+//            }
+//            void level3(){
+//               // robot.moveArm(90);
+//                robot.driveForwards(5);
+//                robot.openClaw();
+//            }
+//
+//
+//        }
 
 
 
