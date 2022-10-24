@@ -108,7 +108,7 @@ public class VuforiaAutonomous extends LinearOpMode {
     private VuforiaLocalizer vuforia = null;
     private VuforiaTrackables targets = null;
     private WebcamName webcamName = null;
-    private MecanumRobot robot = new MecanumRobot();
+    private MecanumRobot robot;
     private List<VuforiaTrackable> allTrackables;
     private ElapsedTime runtime = new ElapsedTime();
     CheckConfig conf = null;
@@ -293,66 +293,59 @@ public class VuforiaAutonomous extends LinearOpMode {
     }
 
     void park() {
-        if (conf.isRed() && !conf.isLeft()) { // if in Red team and right position
-            RandR();
-        } else if(conf.isRed() && conf.isLeft()){ // if in Red team and left position
-            RandL();
-        } else if (!conf.isRed() && !conf.isLeft()) { // if in Blue team and right position
-            BandR();
-        }else{ // in Blue Team and left position
-            BandL();
-        }
-
+        robot.armUp(39);
     }
 
     void RandR(){
         if (targetFound != null) {
             // if target is parking 2
             if (targetFound.equals(allTrackables.get(0)))
-            {robot.slideRight(30);}
+            {robot.slideLeft(21);
+            robot.driveForwards(49);
+            robot.slideRight(25);}
             // if target is parking 3
             else if (targetFound.equals(allTrackables.get(1))){
-                robot.slideRight(30); robot.driveForwards(34);}
+                robot.slideRight(35); robot.driveForwards(34);}
             // if target is parking 1
         } else {
-            robot.slideLeft(24);robot.driveForwards(45.5);}
+            robot.armUp(39);robot.slideLeft(21);robot.driveForwards(50);robot.slideRight(16);robot.driveForwards(8);}
     }
-    void RandL(){
-        if (targetFound != null) {
-            // if target is parking 2
-            if (targetFound.equals(allTrackables.get(0)))
-            {robot.slideLeft(30);}
-            // if target is parking 3
-            else if (targetFound.equals(allTrackables.get(1))){
-                robot.slideLeft(30); robot.driveForwards(34);}
-            // if target is parking 1
-        } else {
-            robot.slideRight(24);robot.driveForwards(45.5);}
-    }
-    void BandR(){
-        if (targetFound != null) {
-            // if target is parking 2
-            if (targetFound.equals(allTrackables.get(0)))
-            {robot.slideLeft(30);}
-            // if target is parking 3
-            else if (targetFound.equals(allTrackables.get(1))){
-                robot.slideRight(30); robot.driveForwards(34);}
-            // if target is parking 1
-        } else {
-            robot.slideLeft(24);robot.driveForwards(45.5);}
-    }
-    void BandL(){
-            if (targetFound != null) {
-                // if target is parking 2
-                if (targetFound.equals(allTrackables.get(0)))
-                {robot.slideLeft(30);}
-                // if target is parking 3
-                else if (targetFound.equals(allTrackables.get(1))){
-                    robot.slideLeft(30); robot.driveForwards(34);}
-                // if target is parking 1
-            } else {
-                robot.slideRight(24);robot.driveForwards(45.5);}
-    }
+//    void RandL(){
+//        if (targetFound != null) {
+//            // if target is parking 2
+//            if (targetFound.equals(allTrackables.get(0)))
+//            {robot.slideLeft(30);}
+//            // if target is parking 3
+//            else if (targetFound.equals(allTrackables.get(1))){
+//                robot.slideLeft(30); robot.driveForwards(34);}
+//            // if target is parking 1
+//        } else {
+//            robot.slideRight(24);robot.driveForwards(45.5);}
+//    }
+//    void BandR(){
+//        if (targetFound != null) {
+//            // if target is parking 2
+//            if (targetFound.equals(allTrackables.get(0)))
+//            {robot.slideLeft(30);}
+//            // if target is parking 3
+//            else if (targetFound.equals(allTrackables.get(1))){
+//                robot.slideRight(30); robot.driveForwards(34);}
+//            // if target is parking 1
+//        } else {
+//            robot.slideLeft(24);robot.driveForwards(45.5);}
+//    }
+//    void BandL(){
+//            if (targetFound != null) {
+//                // if target is parking 2
+//                if (targetFound.equals(allTrackables.get(0)))
+//                {robot.slideLeft(30);}
+//                // if target is parking 3
+//                else if (targetFound.equals(allTrackables.get(1))){
+//                    robot.slideLeft(30); robot.driveForwards(34);}
+//                // if target is parking 1
+//            } else {
+//                robot.slideRight(24);robot.driveForwards(45.5);}
+//    }
 
 //            void level1(){
 //               // robot.moveArm(50);

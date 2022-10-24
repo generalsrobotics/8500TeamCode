@@ -77,10 +77,8 @@
     public double startPos;
     public static final double TURN_SPEED          =  0.5 ;
     public static final double FORWARD_SPEED       =  0.5 ;
-    final double CLAW_OPEN = 0.0;
-    final double CLAW_CLOSED =01.00;
-    public static final double ARM_UP_POWER    =  0.45 ;
-    public static final double ARM_DOWN_POWER  = -0.45 ;
+    public static final double ARM_UP_SPEED  =  0.45 ;
+    public static final double ARM_DOWN_SPEED  = -0.45 ;
 
     static final double     COUNTS_PER_MOTOR_REV    = 537.7 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;
@@ -93,6 +91,8 @@
 
     static final double     ARM_COUNTS_PER_MOTOR_REV    = 2786.2 ;    // eg: TETRIX Motor Encoder
     static final double     ARM_DRIVE_GEAR_REDUCTION    = 96.0 / 48.0 ;
+    static final double OPEN_CLAW = 0.3;
+    static final double CLOSE_CLAW = 0.65;
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
     private LinearOpMode op = null;
@@ -157,6 +157,7 @@
 
       // Define and initialize ALL installed servos.
       claw = map.getClaw();
+     // claw.setPosition(CLOSE_CLAW);
       // claw.setPosition(CLAW_OPEN);
     }
 
@@ -175,43 +176,50 @@
     void driveForwards(double inches){driveForwardsWithEncoder(inches);}
 
     //SLIDING METHODS
-    void slideLeft(double inches){slideRightWithEncoders(inches);}
-    void slideRight(double inches){slideLeftWithEncoders(inches);}
+    void slideLeft(double inches){slideLeftWithEncoders(inches);}
+    void slideRight(double inches){slideRightWithEncoders(inches);}
 
     // TURNING METHODS
     void turnLeft(double degree){
       degree = degree / 3.75; // TURN DEGREE IN TO INCHES
       encoderDrive(TURN_SPEED,-degree, degree, degree/2);
     }
+    
     void turnRight(double degree){
       turnLeft(-degree);
 //      degree = degree / 3.75; // TURN DEGREE IN TO INCHES
 //      encoderDrive(TURN_SPEED,degree, -degree, degree/2);
     }
+    void armUp(double inches){
+      inches = inches * 1.67; // 3.448 is used to make the arm go the actual inches we set
+      armEncoder(ARM_UP_SPEED, inches, inches/2);
+      arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
     //Claw Methods
-//    void openClaw()
-//    {
-//      claw.setPosition(0.0);
-//      op.telemetry.addData("Servo", "0.0");
-//      op.telemetry.update();
-//      runtime.reset();
-//      while (op.opModeIsActive() && (runtime.seconds() < 1.0))
-//      {
-//        op.telemetry.addData("Servo", "Open 0.0: %2.5f S Elapsed", runtime.seconds());
-//        op.telemetry.update();
-//      }
-//    }
-//
-//    void closeClaw() {
-//      claw.setPosition(0.5);
-//      op.telemetry.addData("Servo", "1.0");
-//      op.telemetry.update();
-//      runtime.reset();
-//      while (op.opModeIsActive() && (runtime.seconds() < 1.0)) {
-//        op.telemetry.addData("Servo", "Close.0: %2.5f S Elapsed", runtime.seconds());
-//        op.telemetry.update();
-//      }
-//    }
+    void openClaw()
+    {
+      claw.setPosition(OPEN_CLAW);
+      op.telemetry.addData("Servo", "0.0");
+      op.telemetry.update();
+      runtime.reset();
+      while (op.opModeIsActive() && (runtime.seconds() < 1.0))
+      {
+        op.telemetry.addData("Servo", "Open 0.0: %2.5f S Elapsed", runtime.seconds());
+        op.telemetry.update();
+      }
+    }
+
+    void closeClaw() {
+      claw.setPosition(CLOSE_CLAW);
+      op.telemetry.addData("Servo", "1.0");
+      op.telemetry.update();
+      runtime.reset();
+      while (op.opModeIsActive() && (runtime.seconds() < 1.0)) {
+        op.telemetry.addData("Servo", "Close.0: %2.5f S Elapsed", runtime.seconds());
+        op.telemetry.update();
+      }
+    }
 
     //ENCODER METHODS
     public void encoderDrive(double speed, double leftInches, double rightInches, double timeoutS) {
@@ -284,9 +292,9 @@
       if (op.opModeIsActive()) {
         // Determine new target position, and pass to motor controller
         frontLeftTarget = frontLeft.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-        frontRightTarget = frontRight.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+        frontRightTarget = frontRight.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
         backLeftTarget = backLeft.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-        backRightTarget = backRight.getCurrentPosition() + (int)(rightInches *  COUNTS_PER_INCH);
+        backRightTarget = backRight.getCurrentPosition() + (int)(leftInches *  COUNTS_PER_INCH);
         //set the new target position to target Position
         frontLeft.setTargetPosition(frontLeftTarget);
         frontRight.setTargetPosition(frontRightTarget);
@@ -336,11 +344,12 @@
     }
     void armEncoder(double speed, double armInches, double timeoutS ){
       int armTarget;
+
       armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH_FOR_ARM);
 
       if (op.opModeIsActive()) {
         // Determine new target position, and pass to motor controller
-        armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH);
+        //armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH);
         arm.setTargetPosition(armTarget);
 
         // Turn On RUN_TO_POSITION
