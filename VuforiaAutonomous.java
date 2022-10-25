@@ -127,7 +127,7 @@ public class VuforiaAutonomous extends LinearOpMode {
 
 
         conf = new CheckConfig();
-        conf.Init(hardwareMap.appContext,this);
+        conf.Init(this);
 
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
@@ -241,7 +241,7 @@ public class VuforiaAutonomous extends LinearOpMode {
 
         targets.activate();
         while (!isStopRequested()) {
-            conf.Init(hardwareMap.appContext,this);
+            conf.Init(this);
 
             telemetry.addData("RUNTIME", runtime.seconds());
             telemetry.update();

@@ -121,7 +121,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
         private List<VuforiaTrackable> allTrackables;
 
         private ElapsedTime runtime = new ElapsedTime();
-        //CheckConfig conf = null;
+        CheckConfig conf = null;
 
         VuforiaTrackable targetFound = null;
 
@@ -137,8 +137,8 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
             drive = new SampleMecanumDrive(hardwareMap, this);
             robot = new MecanumRobot();
-//        conf = new CheckConfig();
-//        conf.Init(hardwareMap.appContext,this);
+            conf = new CheckConfig();
+            conf.Init(this);
 
             /*
              * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
@@ -305,7 +305,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
         }
 
         void park() {
-           robot.armEncoder(.5, 4,4/2);
+            robot.armUp(5);
             Trajectory untitled0 = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
                     .splineTo(new Vector2d(-14.07, 48.44), Math.toRadians(270.00))
                     .splineTo(new Vector2d(-7.56, 32.74), Math.toRadians(-51.63))

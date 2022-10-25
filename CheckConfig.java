@@ -15,7 +15,7 @@ public class CheckConfig {
     public CheckConfig() {}
 
 
-       public void Init(Context context, OpMode opMode){
+       public void Init(OpMode opMode){
         try {
             FileInputStream inputStream = new FileInputStream(new File(String.format("%s/FIRST/java/src/org/firstinspires/ftc/teamcode/RobotConfig.txt", Environment.getExternalStorageDirectory().getAbsolutePath())));
             if(inputStream != null){
@@ -23,12 +23,11 @@ public class CheckConfig {
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
                 position = bufferedReader.readLine().split(":")[1].trim();
-                teamColor = bufferedReader.readLine().split(":")[1].trim();
+            //    teamColor = bufferedReader.readLine().split(":")[1].trim();
                 inputStream.close();
                 opMode.telemetry.addData("TeamColor: %s",teamColor);
                 opMode.telemetry.addData("Robot Position: %s", position);
 
-                isRed = teamColor.equalsIgnoreCase("R");
                 isLeft = position.equalsIgnoreCase("L");
 
             }
