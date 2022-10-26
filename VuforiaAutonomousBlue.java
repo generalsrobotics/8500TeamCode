@@ -251,8 +251,6 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
             targets.activate();
             while (!isStopRequested()) {
-                //conf.Init(hardwareMap.appContext,this);
-
                 drive.setPoseEstimate(startPose);
                 robot.claw.setPosition(.80);
 
@@ -305,26 +303,13 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
         }
 
         void park() {
-            robot.armUp(5);
-            Trajectory untitled0 = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
-                    .splineTo(new Vector2d(-14.07, 48.44), Math.toRadians(270.00))
-                    .splineTo(new Vector2d(-7.56, 32.74), Math.toRadians(-51.63))
-                    .build();
-            drive.followTrajectory(untitled0);
-
-            robot.armUp(38);
-
-            Trajectory forward = drive.trajectoryBuilder(untitled0.end())
-                    .forward(2)
-                    .build();
-           drive.followTrajectory(forward);
-           robot.openClaw();
-           Trajectory back = drive.trajectoryBuilder(forward.end())
-                   .back(6)
-                   .build();
-           drive.followTrajectory(back);
+            if(!conf.isLeft())// if robot in the right
+                BandR();
+            else
+                BandL();
         }
 
+        // right fuild side movement
         void BandR() {
             if (targetFound != null) {
                 // if target is parking 2
@@ -335,15 +320,145 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                 }
                 // if target is parking 3
                 else if (targetFound.equals(allTrackables.get(1))) {
-                    robot.slideRight(25);
-                    robot.driveForwards(34);
+                    robot.armUp(5);
+                    Trajectory strafe = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
+                            .strafeTo(new Vector2d(-64.89,67.70))
+                            .build();
+                    drive.followTrajectory(strafe);
+
+                    Trajectory to_junc = drive.trajectoryBuilder(strafe.end())
+                            .splineTo(new Vector2d(-58.67, 34.00), Math.toRadians(-41.63))
+                            .build();
+                  drive.followTrajectory(to_junc);
+                    robot.armUp(13);
+
+                    Trajectory forward = drive.trajectoryBuilder(to_junc.end())
+                            .forward(3)
+                            .build();
+                    drive.followTrajectory(forward);
+                    robot.openClaw();
+
+                    Trajectory back = drive.trajectoryBuilder(forward.end())
+                            .back(6)
+                            .build();
+                    drive.followTrajectory(back);
+
                 }
                 // if target is parking 1
             } else {
-                robot.slideLeft(25);
-                robot.driveForwards(45.5);
+                robot.armUp(5);
+                Trajectory untitled0 = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
+                        .splineTo(new Vector2d(-14.07, 48.44), Math.toRadians(270.00))
+                        .splineTo(new Vector2d(-7.56, 32.74), Math.toRadians(-51.63))
+                        .build();
+                drive.followTrajectory(untitled0);
+
+                robot.armUp(38);
+
+                Trajectory forward = drive.trajectoryBuilder(untitled0.end())
+                        .forward(2)
+                        .build();
+                drive.followTrajectory(forward);
+                robot.openClaw();
+                Trajectory back = drive.trajectoryBuilder(forward.end())
+                        .back(6)
+                        .build();
+                drive.followTrajectory(back);
             }
         }
+        //left fuild side movement
+            void BandL(){
+            //change robot starting position
+                Pose2d left_start = new Pose2d(37.33, 67.70, Math.toRadians(270));
+                drive.setPoseEstimate(left_start);
+
+                if (targetFound != null) {
+                    // if target is parking 2
+                    if (targetFound.equals(allTrackables.get(0))) {
+                        robot.armUp(5);
+                        Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
+                                .strafeTo(new Vector2d(64.00, 67.33))
+                                .build();
+                        drive.followTrajectory(strafe);
+
+                        Trajectory to_junc = drive.trajectoryBuilder(strafe.end())
+                                .lineTo(new Vector2d(64.00, 24.22))
+                                .splineTo(new Vector2d(35.78, 10.89), Math.toRadians(221.42))
+                                .build();
+                        drive.followTrajectory(to_junc);
+                        robot.armUp(38);
+
+                        Trajectory forward = drive.trajectoryBuilder(to_junc.end())
+                                .forward(3)
+                                .build();
+                        drive.followTrajectory(forward);
+
+                        robot.openClaw();
+
+                        Trajectory back = drive.trajectoryBuilder(forward.end())
+                                .back(6)
+                                .build();
+                        drive.followTrajectory(back);
+
+
+                    }
+                    // if target is parking 3
+                    else if (targetFound.equals(allTrackables.get(1))) {
+
+                        robot.armUp(5);
+                        Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
+                                .strafeTo(new Vector2d(12.33, 67.33))
+                                .build();
+                        drive.followTrajectory(strafe);
+
+                        Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
+                                .splineTo(new Vector2d(6.00, 31.33), Math.toRadians(215.54))
+                                .build();
+                        drive.followTrajectory(go_to_junc);
+
+                        robot.armUp(37);
+
+                        Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
+                                .forward(2)
+                                .build();
+                        drive.followTrajectory(forward);
+                        robot.openClaw();
+
+                        Trajectory back = drive.trajectoryBuilder(forward.end())
+                                .back(6)
+                                .build();
+                        drive.followTrajectory(back);
+                       }
+                    // if target is parking 1
+                } else {
+                    robot.armUp(5);
+                    Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
+                            .strafeTo(new Vector2d(64.00, 67.33))
+                            .build();
+                    drive.followTrajectory(strafe);
+
+                    Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
+                            .splineTo(new Vector2d(58.44, 35.11), Math.toRadians(240))
+                            .build();
+                    drive.followTrajectory(go_to_junc);
+
+                    robot.armUp(13);
+
+                    Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
+                            .forward(2)
+                            .build();
+                    drive.followTrajectory(forward);
+                    robot.openClaw();
+
+                    Trajectory back = drive.trajectoryBuilder(forward.end())
+                            .back(6)
+                            .build();
+                    drive.followTrajectory(back);
+            }
+        }
+
+
+
 //      void RandR(){
 //        if (targetFound != null) {
 //            // if target is parking 2

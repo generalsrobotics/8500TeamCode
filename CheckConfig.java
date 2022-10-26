@@ -25,7 +25,7 @@ public class CheckConfig {
                 position = bufferedReader.readLine().split(":")[1].trim();
             //    teamColor = bufferedReader.readLine().split(":")[1].trim();
                 inputStream.close();
-                opMode.telemetry.addData("TeamColor: %s",teamColor);
+               // opMode.telemetry.addData("TeamColor: %s",teamColor);
                 opMode.telemetry.addData("Robot Position: %s", position);
 
                 isLeft = position.equalsIgnoreCase("L");
