@@ -314,9 +314,32 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             if (targetFound != null) {
                 // if target is parking 2
                 if (targetFound.equals(allTrackables.get(0))) {
-                    robot.slideLeft(30);
-                    robot.driveForwards(49);
-                    robot.slideRight(30);
+
+                    robot.armUp(5);
+                    Trajectory strafe = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
+                            .strafeTo(new Vector2d(-64.89,67.70))
+                            .build();
+                    drive.followTrajectory(strafe);
+
+                    Trajectory to_junc = drive.trajectoryBuilder(strafe.end())
+                            .lineTo(new Vector2d(-64.89,24.22))
+                            .splineTo(new Vector2d(-31.56, 9.56), Math.toRadians(-53.13))
+                            .build();
+                    drive.followTrajectory(to_junc);
+                    robot.armUp(38);
+
+                    Trajectory forward = drive.trajectoryBuilder(to_junc.end())
+                            .forward(2)
+                            .build();
+                    drive.followTrajectory(forward);
+                    robot.openClaw();
+                    Trajectory back = drive.trajectoryBuilder(forward.end())
+                            .back(6)
+                            .build();
+                    drive.followTrajectory(back);
+
+
+
                 }
                 // if target is parking 3
                 else if (targetFound.equals(allTrackables.get(1))) {
@@ -353,7 +376,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                         .build();
                 drive.followTrajectory(untitled0);
 
-                robot.armUp(38);
+                robot.armUp(36);
 
                 Trajectory forward = drive.trajectoryBuilder(untitled0.end())
                         .forward(2)
