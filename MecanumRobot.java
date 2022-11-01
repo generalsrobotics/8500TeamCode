@@ -77,7 +77,7 @@
     public double startPos;
     public static final double TURN_SPEED          =  0.5 ;
     public static final double FORWARD_SPEED       =  0.5 ;
-    public static final double ARM_UP_SPEED  =  0.45 ;
+    public static final double ARM_UP_SPEED  =  0.8 ;
     public static final double ARM_DOWN_SPEED  = -0.45 ;
 
     static final double     COUNTS_PER_MOTOR_REV    = 537.7 ;    // eg: TETRIX Motor Encoder

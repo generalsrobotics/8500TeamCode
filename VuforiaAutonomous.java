@@ -35,6 +35,9 @@
 
     import android.os.Environment;
 
+    import com.acmerobotics.roadrunner.geometry.Pose2d;
+    import com.acmerobotics.roadrunner.geometry.Vector2d;
+    import com.acmerobotics.roadrunner.trajectory.Trajectory;
     import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
     import com.qualcomm.robotcore.util.ElapsedTime;
@@ -47,6 +50,7 @@
     import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
     import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
     import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+    import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
     import java.io.File;
     import java.util.ArrayList;
@@ -79,302 +83,301 @@
 @Autonomous(name="Autonomous")
 public class VuforiaAutonomous extends LinearOpMode {
 
-    /*
-     * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
-     * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
-     * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
-     * web site at https://developer.vuforia.com/license-manager.
-     *
-     * Vuforia license keys are always 380 characters long, and look as if they contain mostly
-     * random data. As an example, here is a example of a fragment of a valid key:
-     *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
-     * Once you've obtained a license key, copy the string from the Vuforia web site
-     * and paste it in to your code on the next line, between the double quotes.
-     */
-    private static final String VUFORIA_KEY =
-            "ASg9akz/////AAABmUyMSYT980NPnVlwE+IUZvgcmQVycKh4y6qF5zwgIINrt/luYwZsjEBlHQR43ATLOgSb4zmCadznybzcf1EI0fTBLHFk0VArY96x/Cw6kulvlQF5BCmFHXqmWWulbDy7ASUWKVDK64OAbFSEJC0qqMZEYEQ/UHashdor5748WoqVfpnVs+8XeYMqZIDnnJpHHGbl1M4hGlzK0xVH96T1O0/hqsBAMd6XZjg+Whz04FziDdKSc6NVf65WXQop4m0rwbN+EnymPddCqnAj0xVVKefY8KuI7aJNDX/OUbDGUOWTb5hxl2KUbTYiUiGZQpqtLG2d8NpZ003naRIQRl0ev6+4yTFud9YyvAv2yNRgT82h";
-
-    // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
-    // We will define some constants and conversions here
-    private static final float mmPerInch = 25.4f;
-    private static final float mmTargetHeight = 6 * mmPerInch;          // the height of the center of the target image above the floor
-    private static final float halfField = 72 * mmPerInch;
-    private static final float halfTile = 12 * mmPerInch;
-    private static final float oneAndHalfTile = 36 * mmPerInch;
-
-
-    // Class Members
-    private OpenGLMatrix lastLocation = null;
-    private VuforiaLocalizer vuforia = null;
-    private VuforiaTrackables targets = null;
-    private WebcamName webcamName = null;
-    private MecanumRobot robot;
-    private List<VuforiaTrackable> allTrackables;
-    private ElapsedTime runtime = new ElapsedTime();
-    CheckConfig conf = null;
-
-    VuforiaTrackable targetFound = null;
-
-
-    private boolean targetVisible = false;
-    private String targetName = "";
-
-
-    @Override
-    public void runOpMode() {
-        // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
-        webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-
-        conf = new CheckConfig();
-        conf.Init(this);
-
         /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         * We can pass Vuforia the handle to a camera preview resource (on the RC screen);
-         * If no camera-preview is desired, use the parameter-less constructor instead (commented out below).
-         * Note: A preview window is required if you want to view the camera stream on the Driver Station Phone.
+         * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
+         * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
+         * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
+         * web site at https://developer.vuforia.com/license-manager.
+         *
+         * Vuforia license keys are always 380 characters long, and look as if they contain mostly
+         * random data. As an example, here is a example of a fragment of a valid key:
+         *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
+         * Once you've obtained a license key, copy the string from the Vuforia web site
+         * and paste it in to your code on the next line, between the double quotes.
          */
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        private static final String VUFORIA_KEY =
+                "ASg9akz/////AAABmUyMSYT980NPnVlwE+IUZvgcmQVycKh4y6qF5zwgIINrt/luYwZsjEBlHQR43ATLOgSb4zmCadznybzcf1EI0fTBLHFk0VArY96x/Cw6kulvlQF5BCmFHXqmWWulbDy7ASUWKVDK64OAbFSEJC0qqMZEYEQ/UHashdor5748WoqVfpnVs+8XeYMqZIDnnJpHHGbl1M4hGlzK0xVH96T1O0/hqsBAMd6XZjg+Whz04FziDdKSc6NVf65WXQop4m0rwbN+EnymPddCqnAj0xVVKefY8KuI7aJNDX/OUbDGUOWTb5hxl2KUbTYiUiGZQpqtLG2d8NpZ003naRIQRl0ev6+4yTFud9YyvAv2yNRgT82h";
 
-        robot.init(hardwareMap, this);
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-
-        // We also indicate which camera we wish to use.
-        parameters.cameraName = webcamName;
-
-        // Turn off Extended tracking.  Set this true if you want Vuforia to track beyond the target.
-        parameters.useExtendedTracking = false;
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Load the data sets for the trackable objects. These particular data
-        // sets are stored in the 'assets' part of our application.
-        targets = this.vuforia.loadTrackablesFromAsset("testq");
-
-        // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(targets);
-
-        /**
-         * In order for localization to work, we need to tell the system where each target is on the field, and
-         * where the phone resides on the robot.  These specifications are in the form of <em>transformation matrices.</em>
-         * Transformation matrices are a central, important concept in the math here involved in localization.
-         * See <a href="https://en.wikipedia.org/wiki/Transformation_matrix">Transformation Matrix</a>
-         * for detailed information. Commonly, you'll encounter transformation matrices as instances
-         * of the {@link OpenGLMatrix} class.
-         *
-         * If you are standing in the Red Alliance Station looking towards the center of the field,
-         *     - The X axis runs from your left to the right. (positive from the center to the right)
-         *     - The Y axis runs from the Red Alliance Station towards the other side of the field
-         *       where the Blue Alliance Station is. (Positive is from the center, towards the BlueAlliance station)
-         *     - The Z axis runs from the floor, upwards towards the ceiling.  (Positive is above the floor)
-         *
-         * Before being transformed, each target image is conceptually located at the origin of the field's
-         *  coordinate system (the center of the field), facing up.
-         */
-
-        // Name and locate each trackable object
-        allTrackables.get(1).setName("parking3");
-        allTrackables.get(0).setName("parking2");
-        // allTrackables.get(3).setName("parking4");
-        //identifyTarget(0, "Red Audience Wall",   -halfField,  -oneAndHalfTile, mmTargetHeight, 90, 0,  90);
-    //        identifyTarget(1, "Red Rear Wall",        halfField,  -oneAndHalfTile, mmTargetHeight, 90, 0, -90);
-    //        identifyTarget(2, "Blue Audience Wall",  -halfField,   oneAndHalfTile, mmTargetHeight, 90, 0,  90);
-    //        identifyTarget(3, "Blue Rear Wall",       halfField,   oneAndHalfTile, mmTargetHeight, 90, 0, -90);
-
-        /*
-         * Create a transformation matrix describing where the camera is on the robot.
-         *
-         * Info:  The coordinate frame for the robot looks the same as the field.
-         * The robot's "forward" direction is facing out along X axis, with the LEFT side facing out along the Y axis.
-         * Z is UP on the robot.  This equates to a bearing angle of Zero degrees.
-         *
-         * For a WebCam, the default starting orientation of the camera is looking UP (pointing in the Z direction),
-         * with the wide (horizontal) axis of the camera aligned with the X axis, and
-         * the Narrow (vertical) axis of the camera aligned with the Y axis
-         *
-         * But, this example assumes that the camera is actually facing forward out the front of the robot.
-         * So, the "default" camera position requires two rotations to get it oriented correctly.
-         * 1) First it must be rotated +90 degrees around the X axis to get it horizontal (its now facing out the right side of the robot)
-         * 2) Next it must be be rotated +90 degrees (counter-clockwise) around the Z axis to face forward.
-         *
-         * Finally the camera can be translated to its actual mounting position on the robot.
-         *      In this example, it is centered on the robot (left-to-right and front-to-back), and 6 inches above ground level.
-         */
-
-        final float CAMERA_FORWARD_DISPLACEMENT = 0.0f * mmPerInch;   // eg: Enter the forward distance from the center of the robot to the camera lens
-        final float CAMERA_VERTICAL_DISPLACEMENT = 6.0f * mmPerInch;   // eg: Camera is 6 Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT = 0.0f * mmPerInch;   // eg: Enter the left distance from the center of the robot to the camera lens
-
-        OpenGLMatrix cameraLocationOnRobot = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XZY, DEGREES, 90, 90, 0));
-
-        /**  Let all the trackable listeners know where the camera is.  */
-        for (VuforiaTrackable trackable : allTrackables) {
-            ((VuforiaTrackableDefaultListener) trackable.getListener()).setCameraLocationOnRobot(parameters.cameraName, cameraLocationOnRobot);
-        }
-
-        /*
-         * WARNING:
-         * In this sample, we do not wait for PLAY to be pressed.  Target Tracking is started immediately when INIT is pressed.
-         * This sequence is used to enable the new remote DS Camera Preview feature to be used with this sample.
-         * CONSEQUENTLY do not put any driving commands in this loop.
-         * To restore the normal opmode structure, just un-comment the following line:
-         */
-
-        // waitForStart();
-
-        /* Note: To use the remote camera preview:
-         * AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
-         * Tap the preview window to receive a fresh image.
-         * It is not permitted to transition to RUN while the camera preview window is active.
-         * Either press STOP to exit the OpMode, or use the "options menu" again, and select "Camera Stream" to close the preview window.
-         */
+        // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
+        // We will define some constants and conversions here
+        private static final float mmPerInch = 25.4f;
+        private static final float mmTargetHeight = 6 * mmPerInch;          // the height of the center of the target image above the floor
+        private static final float halfField = 72 * mmPerInch;
+        private static final float halfTile = 12 * mmPerInch;
+        private static final float oneAndHalfTile = 36 * mmPerInch;
 
 
+        // Class Members
+        private OpenGLMatrix lastLocation = null;
+        private VuforiaLocalizer vuforia = null;
+        private VuforiaTrackables targets = null;
+        private WebcamName webcamName = null;
+        private MecanumRobot robot;
+        private List<VuforiaTrackable> allTrackables;
+        private ElapsedTime runtime = new ElapsedTime();
+        CheckConfig conf = null;
+        SampleMecanumDrive drive;
+        Pose2d robot_start;
+
+        VuforiaTrackable targetFound = null;
 
 
-        targets.activate();
-        while (!isStopRequested()) {
+        private boolean targetVisible = false;
+        private String targetName = "";
+
+
+        @Override
+        public void runOpMode() {
+            // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
+            webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+            drive = new SampleMecanumDrive(hardwareMap, this);
+
+            conf = new CheckConfig();
             conf.Init(this);
 
-            telemetry.addData("RUNTIME", runtime.seconds());
-            telemetry.update();
-            int count = 0;
-            // check all the trackable targets to see which one (if any) is visible.
-            targetVisible = false;
-             targetFound = null;
+            /*
+             * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+             * We can pass Vuforia the handle to a camera preview resource (on the RC screen);
+             * If no camera-preview is desired, use the parameter-less constructor instead (commented out below).
+             * Note: A preview window is required if you want to view the camera stream on the Driver Station Phone.
+             */
+            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+            // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+            robot.init(hardwareMap, this);
+            parameters.vuforiaLicenseKey = VUFORIA_KEY;
+
+            // We also indicate which camera we wish to use.
+            parameters.cameraName = webcamName;
+
+            // Turn off Extended tracking.  Set this true if you want Vuforia to track beyond the target.
+            parameters.useExtendedTracking = false;
+
+            //  Instantiate the Vuforia engine
+            vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+            // Load the data sets for the trackable objects. These particular data
+            // sets are stored in the 'assets' part of our application.
+            targets = this.vuforia.loadTrackablesFromAsset("testq");
+
+            // For convenience, gather together all the trackable objects in one easily-iterable collection */
+            allTrackables = new ArrayList<VuforiaTrackable>();
+            allTrackables.addAll(targets);
+
+            /**
+             * In order for localization to work, we need to tell the system where each target is on the field, and
+             * where the phone resides on the robot.  These specifications are in the form of <em>transformation matrices.</em>
+             * Transformation matrices are a central, important concept in the math here involved in localization.
+             * See <a href="https://en.wikipedia.org/wiki/Transformation_matrix">Transformation Matrix</a>
+             * for detailed information. Commonly, you'll encounter transformation matrices as instances
+             * of the {@link OpenGLMatrix} class.
+             *
+             * If you are standing in the Red Alliance Station looking towards the center of the field,
+             *     - The X axis runs from your left to the right. (positive from the center to the right)
+             *     - The Y axis runs from the Red Alliance Station towards the other side of the field
+             *       where the Blue Alliance Station is. (Positive is from the center, towards the BlueAlliance station)
+             *     - The Z axis runs from the floor, upwards towards the ceiling.  (Positive is above the floor)
+             *
+             * Before being transformed, each target image is conceptually located at the origin of the field's
+             *  coordinate system (the center of the field), facing up.
+             */
+
+            // Name and locate each trackable object
+            allTrackables.get(1).setName("parking3");
+            allTrackables.get(0).setName("parking2");
+            // allTrackables.get(3).setName("parking4");
+            //identifyTarget(0, "Red Audience Wall",   -halfField,  -oneAndHalfTile, mmTargetHeight, 90, 0,  90);
+            //        identifyTarget(1, "Red Rear Wall",        halfField,  -oneAndHalfTile, mmTargetHeight, 90, 0, -90);
+            //        identifyTarget(2, "Blue Audience Wall",  -halfField,   oneAndHalfTile, mmTargetHeight, 90, 0,  90);
+            //        identifyTarget(3, "Blue Rear Wall",       halfField,   oneAndHalfTile, mmTargetHeight, 90, 0, -90);
+
+            /*
+             * Create a transformation matrix describing where the camera is on the robot.
+             *
+             * Info:  The coordinate frame for the robot looks the same as the field.
+             * The robot's "forward" direction is facing out along X axis, with the LEFT side facing out along the Y axis.
+             * Z is UP on the robot.  This equates to a bearing angle of Zero degrees.
+             *
+             * For a WebCam, the default starting orientation of the camera is looking UP (pointing in the Z direction),
+             * with the wide (horizontal) axis of the camera aligned with the X axis, and
+             * the Narrow (vertical) axis of the camera aligned with the Y axis
+             *
+             * But, this example assumes that the camera is actually facing forward out the front of the robot.
+             * So, the "default" camera position requires two rotations to get it oriented correctly.
+             * 1) First it must be rotated +90 degrees around the X axis to get it horizontal (its now facing out the right side of the robot)
+             * 2) Next it must be be rotated +90 degrees (counter-clockwise) around the Z axis to face forward.
+             *
+             * Finally the camera can be translated to its actual mounting position on the robot.
+             *      In this example, it is centered on the robot (left-to-right and front-to-back), and 6 inches above ground level.
+             */
+
+            final float CAMERA_FORWARD_DISPLACEMENT = 0.0f * mmPerInch;   // eg: Enter the forward distance from the center of the robot to the camera lens
+            final float CAMERA_VERTICAL_DISPLACEMENT = 6.0f * mmPerInch;   // eg: Camera is 6 Inches above ground
+            final float CAMERA_LEFT_DISPLACEMENT = 0.0f * mmPerInch;   // eg: Enter the left distance from the center of the robot to the camera lens
+
+            OpenGLMatrix cameraLocationOnRobot = OpenGLMatrix
+                    .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                    .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XZY, DEGREES, 90, 90, 0));
+
+            /**  Let all the trackable listeners know where the camera is.  */
             for (VuforiaTrackable trackable : allTrackables) {
-                if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-                    telemetry.addData("Visible Target", trackable.getName());
-                    targetVisible = true;
-                    targetName = trackable.getName();
-                    targetFound = trackable;
-
-                    // getUpdatedRobotLocation() will return null if no new information is available since
-                    // the last time that call was made, or if the trackable is not currently visible.
-                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
-                    if (robotLocationTransform != null) {
-                        lastLocation = robotLocationTransform;
-                    }
-                    break;
-                }
-                count++;
+                ((VuforiaTrackableDefaultListener) trackable.getListener()).setCameraLocationOnRobot(parameters.cameraName, cameraLocationOnRobot);
             }
-            // Provide feedback as of which target its has found
 
-            if (targetVisible) {
-                if (targetFound.equals(allTrackables.get(0))) {// parking 2
-                    telemetry.addData("Robot is parking to %s", targetName);
-                    telemetry.update();
-                    waitForStart();
-                    park();
-                    break;
-                } else if (targetFound.equals(allTrackables.get(1))) {//parking 3
-                    telemetry.addData("Robot is parking to %s", targetName);
-                    telemetry.update();
-                    waitForStart();
-                    park();
-                    break;
-                }
-            }else if (runtime.seconds() > 10) {//parking 1
-                telemetry.addData("Parking 1 ","");
+            /*
+             * WARNING:
+             * In this sample, we do not wait for PLAY to be pressed.  Target Tracking is started immediately when INIT is pressed.
+             * This sequence is used to enable the new remote DS Camera Preview feature to be used with this sample.
+             * CONSEQUENTLY do not put any driving commands in this loop.
+             * To restore the normal opmode structure, just un-comment the following line:
+             */
+
+            // waitForStart();
+
+            /* Note: To use the remote camera preview:
+             * AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
+             * Tap the preview window to receive a fresh image.
+             * It is not permitted to transition to RUN while the camera preview window is active.
+             * Either press STOP to exit the OpMode, or use the "options menu" again, and select "Camera Stream" to close the preview window.
+             */
+
+
+            targets.activate();
+            while (!isStopRequested()) {
+                robot_start = new Pose2d(-37.33, -67.70, Math.toRadians(270.00));
+                drive.setPoseEstimate(robot_start);
+                conf.Init(this);
+
+                telemetry.addData("RUNTIME", runtime.seconds());
                 telemetry.update();
-                waitForStart();
-                park();
-                break;
+                int count = 0;
+                // check all the trackable targets to see which one (if any) is visible.
+                targetVisible = false;
+                targetFound = null;
+                for (VuforiaTrackable trackable : allTrackables) {
+                    if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                        telemetry.addData("Visible Target", trackable.getName());
+                        targetVisible = true;
+                        targetName = trackable.getName();
+                        targetFound = trackable;
+
+                        // getUpdatedRobotLocation() will return null if no new information is available since
+                        // the last time that call was made, or if the trackable is not currently visible.
+                        OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
+                        if (robotLocationTransform != null) {
+                            lastLocation = robotLocationTransform;
+                        }
+                        break;
+                    }
+                    count++;
+                }
+                // Provide feedback as of which target its has found
+
+                if (targetVisible) {
+                    if (targetFound.equals(allTrackables.get(0))) {// parking 2
+                        telemetry.addData("Robot is parking to %s", targetName);
+                        telemetry.update();
+                        waitForStart();
+                        park();
+                        break;
+                    } else if (targetFound.equals(allTrackables.get(1))) {//parking 3
+                        telemetry.addData("Robot is parking to %s", targetName);
+                        telemetry.update();
+                        waitForStart();
+                        park();
+                        break;
+                    }
+                } else if (runtime.seconds() > 10) {//parking 1
+                    telemetry.addData("Parking 1 ", "");
+                    telemetry.update();
+                    waitForStart();
+                    park();
+                    break;
+                }
+            }
+        }
+
+        void park() {
+            robot.armUp(39);
+        }
+
+        void RandL() {
+            if (targetFound != null) {
+                // if target is parking 2
+                if (targetFound.equals(allTrackables.get(0))) {
+
+                    robot.armUp(5);
+                    Trajectory strafe = drive.trajectoryBuilder(robot_start)
+                            .strafeTo(new Vector2d(-64.89, -67.70))
+                            .build();
+                    drive.followTrajectory(strafe);
+
+                    Trajectory to_junc = drive.trajectoryBuilder(strafe.end())
+                            .lineTo(new Vector2d(-64.89, -24.22))
+                            .splineTo(new Vector2d(-31.56, -9.56), Math.toRadians(413.13))
+                            .build();
+                    drive.followTrajectory(to_junc);
+                    robot.armUp(38);
+
+                    Trajectory forward = drive.trajectoryBuilder(to_junc.end())
+                            .forward(2)
+                            .build();
+                    drive.followTrajectory(forward);
+                    robot.openClaw();
+                    Trajectory back = drive.trajectoryBuilder(forward.end())
+                            .back(6)
+                            .build();
+                    drive.followTrajectory(back);
+
+
+                }
+                // if target is parking 3
+                else if (targetFound.equals(allTrackables.get(1))) {
+                    robot.armUp(5);
+                    Trajectory strafe = drive.trajectoryBuilder(robot_start)
+                            .strafeTo(new Vector2d(-64.89, -67.70))
+                            .build();
+                    drive.followTrajectory(strafe);
+
+                    Trajectory to_junc = drive.trajectoryBuilder(strafe.end())
+                            .splineTo(new Vector2d(-58.67, -34.00), Math.toRadians(401.63))
+                            .build();
+                    drive.followTrajectory(to_junc);
+                    robot.armUp(13);
+
+                    Trajectory forward = drive.trajectoryBuilder(to_junc.end())
+                            .forward(3)
+                            .build();
+                    drive.followTrajectory(forward);
+                    robot.openClaw();
+
+                    Trajectory back = drive.trajectoryBuilder(forward.end())
+                            .back(6)
+                            .build();
+                    drive.followTrajectory(back);
+
+                }
+                // if target is parking 1
+            } else {
+                robot.armUp(5);
+                Trajectory untitled0 = drive.trajectoryBuilder(new Pose2d(-37.33, -67.70, Math.toRadians(90.00)))
+                        .splineTo(new Vector2d(-14.07, -48.44), Math.toRadians(90.00))
+                        .splineTo(new Vector2d(-7.56, -32.74), Math.toRadians(411.63))
+                        .build();
+                drive.followTrajectory(untitled0);
+
+                robot.armUp(36);
+
+                Trajectory forward = drive.trajectoryBuilder(untitled0.end())
+                        .forward(2)
+                        .build();
+                drive.followTrajectory(forward);
+                robot.openClaw();
+                Trajectory back = drive.trajectoryBuilder(forward.end())
+                        .back(6)
+                        .build();
+                drive.followTrajectory(back);
             }
         }
     }
-
-    void park() {
-        robot.armUp(39);
-    }
-
-    void RandR(){
-        if (targetFound != null) {
-            // if target is parking 2
-            if (targetFound.equals(allTrackables.get(0)))
-            {robot.slideLeft(21);
-            robot.driveForwards(49);
-            robot.slideRight(25);}
-            // if target is parking 3
-            else if (targetFound.equals(allTrackables.get(1))){
-                robot.slideRight(35); robot.driveForwards(34);}
-            // if target is parking 1
-        } else {
-            robot.armUp(39);robot.slideLeft(21);robot.driveForwards(50);robot.slideRight(16);robot.driveForwards(8);}
-    }
-//    void RandL(){
-//        if (targetFound != null) {
-//            // if target is parking 2
-//            if (targetFound.equals(allTrackables.get(0)))
-//            {robot.slideLeft(30);}
-//            // if target is parking 3
-//            else if (targetFound.equals(allTrackables.get(1))){
-//                robot.slideLeft(30); robot.driveForwards(34);}
-//            // if target is parking 1
-//        } else {
-//            robot.slideRight(24);robot.driveForwards(45.5);}
-//    }
-//    void BandR(){
-//        if (targetFound != null) {
-//            // if target is parking 2
-//            if (targetFound.equals(allTrackables.get(0)))
-//            {robot.slideLeft(30);}
-//            // if target is parking 3
-//            else if (targetFound.equals(allTrackables.get(1))){
-//                robot.slideRight(30); robot.driveForwards(34);}
-//            // if target is parking 1
-//        } else {
-//            robot.slideLeft(24);robot.driveForwards(45.5);}
-//    }
-//    void BandL(){
-//            if (targetFound != null) {
-//                // if target is parking 2
-//                if (targetFound.equals(allTrackables.get(0)))
-//                {robot.slideLeft(30);}
-//                // if target is parking 3
-//                else if (targetFound.equals(allTrackables.get(1))){
-//                    robot.slideLeft(30); robot.driveForwards(34);}
-//                // if target is parking 1
-//            } else {
-//                robot.slideRight(24);robot.driveForwards(45.5);}
-//    }
-
-//            void level1(){
-//               // robot.moveArm(50);
-//                robot.driveForwards(5);
-//                robot.openClaw();
-//            }
-//            void level2(){
-//               // robot.moveArm(70);
-//                robot.driveForwards(5);
-//                robot.openClaw();
-//            }
-//            void level3(){
-//               // robot.moveArm(90);
-//                robot.driveForwards(5);
-//                robot.openClaw();
-//            }
-
-
-        }
-
-
-
-
-//    void    identifyTarget(int targetIndex, String targetName, float dx, float dy, float dz, float rx, float ry, float rz) {
-//        VuforiaTrackable aTarget = targets.get(targetIndex);
-//        aTarget.setName(targetName);
-//        aTarget.setLocation(OpenGLMatrix.translation(dx, dy, dz)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, rx, ry, rz)));
-//    }
-
-
-        /* Initialize standard Hardware interfaces */
