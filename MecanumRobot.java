@@ -76,7 +76,7 @@
     public int blinkTime = 100;
     public double startPos;
     public static final double TURN_SPEED          =  0.5 ;
-    public static final double FORWARD_SPEED       =  0.5 ;
+    public static final double FORWARD_SPEED       =  0.3 ;
     public static final double ARM_UP_SPEED  =  0.8 ;
     public static final double ARM_DOWN_SPEED  = -0.45 ;
 
@@ -92,7 +92,7 @@
     static final double     ARM_COUNTS_PER_MOTOR_REV    = 2786.2 ;    // eg: TETRIX Motor Encoder
     static final double     ARM_DRIVE_GEAR_REDUCTION    = 96.0 / 48.0 ;
     static final double OPEN_CLAW = 0.3;
-    static final double CLOSE_CLAW = 0.65;
+    static final double CLOSE_CLAW = 0.85;
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
     private LinearOpMode op = null;
@@ -192,7 +192,12 @@
     }
     void armUp(double inches){
       inches = inches * 1.67; // 3.448 is used to make the arm go the actual inches we set
-      armEncoder(ARM_UP_SPEED, inches, inches/2);
+      armEncoder(ARM_UP_SPEED, inches, Double.valueOf(inches) /2);
+      arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+    void armDown(double inches){
+      inches = inches * 1.67; // 3.448 is used to make the arm go the actual inches we set
+      armdownEncoder(ARM_UP_SPEED, inches, inches/2);
       arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
@@ -358,6 +363,43 @@
         // reset the timeout time and start motion.
         runtime.reset();
         arm.setPower(Math.abs(speed));
+
+        // keep looping while we are still active, and there is time left, and both motors are running.
+        // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+        // its target position, the motion will stop.  This is "safer" in the event that the robot will
+        // always end the motion as soon as possible.
+        // However, if you require that BOTH motors have finished their moves before the robot continues
+        // onto the next step, use (isBusy() || isBusy()) in the loop test.
+        while (op.opModeIsActive() && (runtime.seconds() < timeoutS) &&(arm.isBusy() ) ) {
+          // Display it for the driver.
+          op.telemetry.addData("armMotor:",  "Running to %7d :%7d", arm.getCurrentPosition(),armTarget);
+          op.telemetry.update();
+        }
+        // Stop all motion;
+        arm.setPower(0);
+
+        // Turn off RUN_TO_POSITION
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //  sleep(250);   // optional pause after each move
+      }
+    }
+ void armdownEncoder(double speed, double armInches, double timeoutS ){
+      int armTarget;
+
+      armTarget = arm.getCurrentPosition() - (int)(armInches * COUNTS_PER_INCH_FOR_ARM);
+
+      if (op.opModeIsActive()) {
+        // Determine new target position, and pass to motor controller
+        //armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH);
+        arm.setTargetPosition(armTarget);
+
+        // Turn On RUN_TO_POSITION
+        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        // reset the timeout time and start motion.
+        runtime.reset();
+        arm.setPower(-speed);
 
         // keep looping while we are still active, and there is time left, and both motors are running.
         // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits

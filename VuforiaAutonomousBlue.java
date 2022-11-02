@@ -443,10 +443,28 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                                 .build();
                         drive.followTrajectory(back);
 
-                        Trajectory to_pos = drive.trajectoryBuilder(back.end())
+
+                        Trajectory pick_up = drive.trajectoryBuilder(back.end())
                                 .splineTo(new Vector2d(34.67, 12.22), Math.toRadians(360.00))
+                                .forward(22)
                                 .build();
-                        drive.followTrajectory(to_pos);
+                        drive.followTrajectory(pick_up);
+                        robot.armDown(26);
+                        robot.closeClaw();
+
+                        robot.armEncoder(.8, 12, 6);
+
+                        Trajectory back_up = drive.trajectoryBuilder(pick_up.end())
+                                .back(10)
+                                .build();
+                        drive.followTrajectory(back_up);
+
+                        drive.turn(Math.toRadians(220));
+                        robot.armUp(28);
+                        robot.driveForwards(7.5);
+                        sleep(1000);
+
+
                     }
                     // if target is parking 3
                     else if (targetFound.equals(allTrackables.get(1))) {
