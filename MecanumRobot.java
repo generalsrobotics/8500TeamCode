@@ -77,7 +77,7 @@
     public double startPos;
     public static final double TURN_SPEED          =  0.5 ;
     public static final double FORWARD_SPEED       =  0.3 ;
-    public static final double ARM_UP_SPEED  =  0.8 ;
+    public static final double ARM_UP_SPEED  =  1 ;
     public static final double ARM_DOWN_SPEED  = -0.45 ;
 
     static final double     COUNTS_PER_MOTOR_REV    = 537.7 ;    // eg: TETRIX Motor Encoder
@@ -172,7 +172,7 @@
     }
 
     // DRIVE METHODS
-    void driveBackwards(double inches){driveBackwardsWithEncoder(inches);}
+    void driveBackwards(double inches){resetEncoders();driveBackwardsWithEncoder(inches);}
     void driveForwards(double inches){driveForwardsWithEncoder(inches);}
 
     //SLIDING METHODS
@@ -191,8 +191,10 @@
 //      encoderDrive(TURN_SPEED,degree, -degree, degree/2);
     }
     void armUp(double inches){
+      op.telemetry.addData("armUp", "");
+      op.telemetry.update();
       inches = inches * 1.67; // 3.448 is used to make the arm go the actual inches we set
-      armEncoder(ARM_UP_SPEED, inches, Double.valueOf(inches) /2);
+      armEncoder(ARM_UP_SPEED, inches, inches/2);
       arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     void armDown(double inches){
@@ -228,6 +230,7 @@
 
     //ENCODER METHODS
     public void encoderDrive(double speed, double leftInches, double rightInches, double timeoutS) {
+
       int frontLeftTarget;
       int frontRightTarget;
       int backLeftTarget;
@@ -264,7 +267,6 @@
         // However, if you require that BOTH motors have finished their moves before the robot continues
         // onto the next step, use (isBusy() || isBusy()) in the loop test.
         while (op.opModeIsActive() &&
-                (runtime.seconds() < timeoutS) &&
                 (frontLeft.isBusy() && frontRight.isBusy() &&
                         backLeft.isBusy() && backRight.isBusy())) {
           // Display it for the driver.
@@ -348,6 +350,7 @@
 
     }
     void armEncoder(double speed, double armInches, double timeoutS ){
+      arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
       int armTarget;
 
       armTarget = arm.getCurrentPosition() + (int)(armInches * COUNTS_PER_INCH_FOR_ARM);
@@ -370,9 +373,9 @@
         // always end the motion as soon as possible.
         // However, if you require that BOTH motors have finished their moves before the robot continues
         // onto the next step, use (isBusy() || isBusy()) in the loop test.
-        while (op.opModeIsActive() && (runtime.seconds() < timeoutS) &&(arm.isBusy() ) ) {
+        while (op.opModeIsActive() && arm.isBusy()) {
           // Display it for the driver.
-          op.telemetry.addData("armMotor:",  "Running to %7d :%7d", arm.getCurrentPosition(),armTarget);
+          op.telemetry.addData("armMotor:",  "Running to %7d :%7d", arm.getCurrentPosition(), armTarget);
           op.telemetry.update();
         }
         // Stop all motion;
@@ -385,7 +388,9 @@
       }
     }
  void armdownEncoder(double speed, double armInches, double timeoutS ){
-      int armTarget;
+   arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+   int armTarget;
 
       armTarget = arm.getCurrentPosition() - (int)(armInches * COUNTS_PER_INCH_FOR_ARM);
 
@@ -407,7 +412,7 @@
         // always end the motion as soon as possible.
         // However, if you require that BOTH motors have finished their moves before the robot continues
         // onto the next step, use (isBusy() || isBusy()) in the loop test.
-        while (op.opModeIsActive() && (runtime.seconds() < timeoutS) &&(arm.isBusy() ) ) {
+        while (op.opModeIsActive() &&arm.isBusy() ) {
           // Display it for the driver.
           op.telemetry.addData("armMotor:",  "Running to %7d :%7d", arm.getCurrentPosition(),armTarget);
           op.telemetry.update();
@@ -445,5 +450,11 @@
       frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
       backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
       backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    void resetEncoders(){
+      frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+      backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+      frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+      backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
   }

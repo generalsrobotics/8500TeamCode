@@ -449,20 +449,21 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                                 .forward(22)
                                 .build();
                         drive.followTrajectory(pick_up);
-                        robot.armDown(26);
+                        robot.armDown(28);
                         robot.closeClaw();
-
-                        robot.armEncoder(.8, 12, 6);
+                        robot.armUp(6);
 
                         Trajectory back_up = drive.trajectoryBuilder(pick_up.end())
-                                .back(10)
+                                .back(20)
                                 .build();
                         drive.followTrajectory(back_up);
 
                         drive.turn(Math.toRadians(220));
-                        robot.armUp(28);
-                        robot.driveForwards(7.5);
+                        robot.armUp(30);
+                        robot.driveForwards(9);
                         sleep(1000);
+                        robot.openClaw();
+                        robot.driveForwards(-10);
 
 
                     }
@@ -476,11 +477,11 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                         drive.followTrajectory(strafe);
 
                         Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
-                                .splineTo(new Vector2d(6.00, 32.33), Math.toRadians(215.54))
+                                .splineTo(new Vector2d(6.00, 32.33), Math.toRadians(217.54))
                                 .build();
                         drive.followTrajectory(go_to_junc);
 
-                        robot.armUp(35);
+                        robot.armUp(34.5);
 
                         Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
                                 .forward(2)
@@ -490,7 +491,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                         robot.openClaw();
 
                         Trajectory back = drive.trajectoryBuilder(forward.end())
-                                .back(6)
+                                .back(10)
                                 .build();
                         drive.followTrajectory(back);
                        }
