@@ -2,12 +2,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class DeviceMap {
     private final DcMotor frontLeft,backLeft,frontRight,backRight,arm;
     private final Servo claw;
+    private final DistanceSensor rangeSensor;
 
     public DeviceMap(HardwareMap map){
         // define & initializing motors & Servos
@@ -18,6 +20,8 @@ public class DeviceMap {
         arm = map.get(DcMotor.class,"Arm");
 
         claw = map.get(Servo.class,"claw");
+
+        rangeSensor = map.get(DistanceSensor.class, "sensor_distance");
     }
 
     // MOTOR GETTERS
@@ -27,8 +31,10 @@ public class DeviceMap {
     public DcMotor getBackRight(){return backRight;}
     public DcMotor getArm(){return arm;}
 
+
     // SERVO GETTERS
     public Servo getClaw(){return claw;}
 
+    public DistanceSensor getRangeSensor(){return rangeSensor;}
 
 }

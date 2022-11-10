@@ -165,10 +165,18 @@
 
     // stop all motors
     void stop(){
+
+
       frontLeft.setPower(0);
       frontRight.setPower(0);
       backLeft.setPower(0);
       backRight.setPower(0);
+
+      frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+      frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+      backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+      backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
     }
 
     // DRIVE METHODS

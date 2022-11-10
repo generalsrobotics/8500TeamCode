@@ -85,7 +85,7 @@
     * is explained below.
     */
 
-@Autonomous(name="AutonomousBlue")
+@Autonomous(name="Autonomous")
 public class VuforiaAutonomousBlue extends LinearOpMode {
 
         /*
@@ -128,6 +128,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
         private Pose2d startPose = new Pose2d(-37.33, 67.70, Math.toRadians(270));
 
         private boolean targetVisible = false;
+        private boolean  tr = true;
         private String targetName = "";
 
 
@@ -189,8 +190,9 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
              */
 
             // Name and locate each trackable object
-            allTrackables.get(1).setName("parking3");
-            allTrackables.get(0).setName("parking2");
+           // allTrackables.get(0).setName("parking1");
+            allTrackables.get(0).setName("parking3");
+            allTrackables.get(1).setName("parking2");
 
             // allTrackables.get(3).setName("parking4");
             //identifyTarget(0, "Red Audience Wall",   -halfField,  -oneAndHalfTile, mmTargetHeight, 90, 0,  90);
@@ -239,8 +241,12 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
              * To restore the normal opmode structure, just un-comment the following line:
              */
 
-            // waitForStart();
+             waitForStart();
 
+             if(tr){
+                 runtime.reset();
+                 tr = false;
+             }
             /* Note: To use the remote camera preview:
              * AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
              * Tap the preview window to receive a fresh image.
@@ -279,28 +285,30 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                 // Provide feedback as of which target its has found
 
                 if (targetVisible) {
-                    if (targetFound.equals(allTrackables.get(0))) {// parking 2
+                    if (targetFound.equals(allTrackables.get(1))) {// parking 2
                         telemetry.addData("Robot is parking to %s", targetName);
                         telemetry.update();
-                        waitForStart();
+                        //waitForStart();
                         park();
                         break;
-                    } else if (targetFound.equals(allTrackables.get(1))) {//parking 3
+                    } else if (targetFound.equals(allTrackables.get(0))) {//parking 3
                         telemetry.addData("Robot is parking to %s", targetName);
                         telemetry.update();
-                        waitForStart();
+                        //  waitForStart();
                         park();
                         break;
                     }
-                } else if (runtime.seconds() > 10) {//parking 1
-                    telemetry.addData("Parking 1 ", "");
-                    telemetry.update();
-                    waitForStart();
-                    park();
-                    break;
+
+                    } else if ( runtime.seconds() > 10) {//parking 1
+                        telemetry.addData("Parking 1 ", "");
+                        telemetry.update();
+                        //waitForStart();
+                        park();
+                        break;
+                    }
                 }
             }
-        }
+
 
         void park() {
             if(!conf.isLeft())// if robot in the right
@@ -315,24 +323,40 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                 // if target is parking 2
                 if (targetFound.equals(allTrackables.get(0))) {
 
-                    robot.armUp(5);
+                    robot.armUp(6);
                     Trajectory strafe = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
                             .strafeTo(new Vector2d(-12.33, 67.33))
                             .build();
                     drive.followTrajectory(strafe);
 
 
-                    Trajectory to_junc = drive.trajectoryBuilder(strafe.end())
-                            .lineTo(new Vector2d(-12.33,24.22))
-                            .splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(232.00))
-                            .build();
+                    Trajectory to_junc;
+                        if(conf.isRed()) {
+                            to_junc = drive.trajectoryBuilder(strafe.end())
+                                    .lineTo(new Vector2d(-12.33, 24.22))
+                                    .splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(230.00))
+                                    .build();
+                        }else{
+                            to_junc = drive.trajectoryBuilder(strafe.end())
+                                    .lineTo(new Vector2d(-12.33, 24.22))
+                                    .splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(232.00))
+                                    .build();
+                        }
                     drive.followTrajectory(to_junc);
                     robot.armUp(35);
 
-                    Trajectory forward = drive.trajectoryBuilder(to_junc.end())
-                            .forward(4.5)
-                            .build();
+                    Trajectory forward;
+                    if(conf.isRed()){
+                       forward = drive.trajectoryBuilder(to_junc.end())
+                                .forward(3)
+                                .build();
+                    }else {
+                        forward = drive.trajectoryBuilder(to_junc.end())
+                                .forward(4.5)
+                                .build();
+                    }
                     drive.followTrajectory(forward);
+
                     sleep(2000);
                     robot.openClaw();
                     Trajectory back = drive.trajectoryBuilder(forward.end())
@@ -364,7 +388,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
                     }else {
                         to_junc = drive.trajectoryBuilder(strafe.end())
-                                .splineTo(new Vector2d(-58.67, 34.00), Math.toRadians(-41.63))
+                                .splineTo(new Vector2d(-59.67, 35.00), Math.toRadians(-41.63))
                                 .build();
                     }
                     drive.followTrajectory(to_junc);
@@ -390,21 +414,21 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             } else {
                 robot.armUp(5);
                 Trajectory untitled0 = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
-                        .splineTo(new Vector2d(-14.07, 48.44), Math.toRadians(270.00))
-                        .splineTo(new Vector2d(-7.56, 32.74), Math.toRadians(-51.63))
+                        .splineTo(new Vector2d(-15.93, 48.44), Math.toRadians(270.00))
+                        .splineTo(new Vector2d(-10.63, 34.93), Math.toRadians(-53.63))
                         .build();
                 drive.followTrajectory(untitled0);
 
-                robot.armUp(35);
+                robot.armUp(35.5);
 
                 Trajectory forward = drive.trajectoryBuilder(untitled0.end())
-                        .forward(2)
+                        .forward(3)
                         .build();
                 drive.followTrajectory(forward);
                 sleep(2000);
                 robot.openClaw();
                 Trajectory back = drive.trajectoryBuilder(forward.end())
-                        .back(6)
+                        .back(7)
                         .build();
                 drive.followTrajectory(back);
             }
@@ -418,59 +442,91 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                 if (targetFound != null) {
                     // if target is parking 2
                     if (targetFound.equals(allTrackables.get(0))) {
-                        robot.armUp(5);
+                        //strafe left
                         Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
                                 .strafeTo(new Vector2d(12.33, 67.33))
                                 .build();
+
+                        Trajectory toLine ;
+                        if(conf.isRed()){
+                            toLine = drive.trajectoryBuilder(strafe.end())
+                                    .lineTo(new Vector2d(12.33, 14.22))
+                                    .build();
+                        }else{
+                            toLine = drive.trajectoryBuilder(strafe.end())
+                                    .lineTo(new Vector2d(12.33, 14.22))
+                                    .build();
+                        }
+                        Trajectory strafe_to_Junc;
+                        if(conf.isRed()){
+                            strafe_to_Junc = drive.trajectoryBuilder(toLine.end())
+                                    .strafeTo(new Vector2d(24.85, 14.89))
+                                    .build();
+                        }else{
+                            strafe_to_Junc =drive.trajectoryBuilder(toLine.end())
+                                    .strafeTo(new Vector2d(24.85, 12.89))
+                                    .build();
+                        }
+
+
+                        Trajectory forward;
+                        if(conf.isRed()){
+                          forward= drive.trajectoryBuilder(strafe_to_Junc.end())
+                                    .forward(3.5)
+                                    .build();
+
+                        } else{
+                           forward = drive.trajectoryBuilder(strafe_to_Junc.end())
+                                    .forward(3)
+                                    .build();
+                        }
+
+                        Trajectory back = drive.trajectoryBuilder(forward.end())
+                                .back(5)
+                                .build();
+
+                        Trajectory lineToStack = drive.trajectoryBuilder(back.end())
+                                .addDisplacementMarker(()->{
+                                    drive.turn(Math.toRadians(90));
+                                })
+                                .lineTo(new Vector2d(56,14))
+                                .build();
+//
+//                        Trajectory pick_up;
+//                        if (conf.isRed()) {
+//                            telemetry.addData("red:","");
+//                            telemetry.update();
+//                            pick_up = drive.trajectoryBuilder(back.end())
+//                                    .splineTo(new Vector2d(34.67, 15.22), Math.toRadians(360.00))
+//                                    .build();
+//                        }else{
+//                            pick_up = drive.trajectoryBuilder(back.end())
+//                                    .splineTo(new Vector2d(34.67, 15.22), Math.toRadians(360.00))
+//                                    .build();
+//                        }
+
+
+                        //run trajectories
+                        robot.armUp(5);
                         drive.followTrajectory(strafe);
-
-                        Trajectory to_junc = drive.trajectoryBuilder(strafe.end())
-                                .lineTo(new Vector2d(12.33, 24.22))
-                                .splineTo(new Vector2d(15.56, 12.22), Math.toRadians(-49.18))
-                                .build();
-                        drive.followTrajectory(to_junc);
-
-                        robot.armUp(35);
-                        Trajectory forward = drive.trajectoryBuilder(to_junc.end())
-                                .forward(4.5)
-                                .build();
+                        drive.followTrajectory(toLine);
+                        drive.followTrajectory(strafe_to_Junc);
+                        robot.armUp(36);
                         drive.followTrajectory(forward);
                         sleep(1000);
                         robot.openClaw();
-
-                        Trajectory back = drive.trajectoryBuilder(forward.end())
-                                .back(12)
-                                .build();
                         drive.followTrajectory(back);
+                       // drive.turn(Math.toRadians(90));
+                        drive.followTrajectory(lineToStack);
+                        //drive.followTrajectory(pick_up);
 
-
-                        Trajectory pick_up = drive.trajectoryBuilder(back.end())
-                                .splineTo(new Vector2d(34.67, 12.22), Math.toRadians(360.00))
-                                .forward(22)
-                                .build();
-                        drive.followTrajectory(pick_up);
-                        robot.armDown(28);
-                        robot.closeClaw();
-                        robot.armUp(6);
-
-                        Trajectory back_up = drive.trajectoryBuilder(pick_up.end())
-                                .back(20)
-                                .build();
-                        drive.followTrajectory(back_up);
-
-                        drive.turn(Math.toRadians(220));
-                        robot.armUp(30);
-                        robot.driveForwards(9);
-                        sleep(1000);
-                        robot.openClaw();
-                        robot.driveForwards(-10);
 
 
                     }
                     // if target is parking 3
                     else if (targetFound.equals(allTrackables.get(1))) {
 
-                        robot.armUp(5);
+                        robot.armUp(6);
                         Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
                                 .strafeTo(new Vector2d(12.33, 67.33))
                                 .build();
@@ -483,15 +539,15 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
                         robot.armUp(34.5);
 
-                        Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
-                                .forward(2)
-                                .build();
-                        drive.followTrajectory(forward);
+//                        Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
+//                                .forward(2)
+//                                .build();
+//                        drive.followTrajectory(forward);
                         sleep(1000);
                         robot.openClaw();
 
-                        Trajectory back = drive.trajectoryBuilder(forward.end())
-                                .back(10)
+                        Trajectory back = drive.trajectoryBuilder(go_to_junc.end())
+                                .back(7)
                                 .build();
                         drive.followTrajectory(back);
                        }
@@ -511,14 +567,14 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                     robot.armUp(13);
 
                     Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
-                            .forward(2)
+                            .forward(2.5)
                             .build();
                     drive.followTrajectory(forward);
                     sleep(1000);
                     robot.openClaw();
 
                     Trajectory back = drive.trajectoryBuilder(forward.end())
-                            .back(6)
+                            .back(8)
                             .build();
                     drive.followTrajectory(back);
             }

@@ -39,6 +39,7 @@
     import com.acmerobotics.roadrunner.geometry.Vector2d;
     import com.acmerobotics.roadrunner.trajectory.Trajectory;
     import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+    import com.qualcomm.robotcore.eventloop.opmode.Disabled;
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
     import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -79,8 +80,8 @@
     * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
     * is explained below.
     */
-
-@Autonomous(name="Autonomous")
+@Disabled
+@Autonomous(name="Autonomous23")
 public class VuforiaAutonomous extends LinearOpMode {
 
         /*
