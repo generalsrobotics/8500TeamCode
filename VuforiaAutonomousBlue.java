@@ -47,6 +47,7 @@
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
     import com.qualcomm.robotcore.hardware.DcMotor;
     import com.qualcomm.robotcore.util.ElapsedTime;
+    import com.vuforia.Trackable;
 
     import org.firstinspires.ftc.robotcore.external.ClassFactory;
     import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -125,7 +126,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
         VuforiaTrackable targetFound = null;
 
-        private Pose2d startPose = new Pose2d(-37.33, 67.70, Math.toRadians(270));
+        private Pose2d startPose = new Pose2d(-37.33, 61.70, Math.toRadians(270));
 
         private boolean targetVisible = false;
         private boolean  tr = true;
@@ -312,343 +313,224 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
         void park() {
             if(!conf.isLeft())// if robot in the right
-                BandR();
+                rightLocation();
             else
-                BandL();
+                leftLocation();
         }
 
         // right fuild side movement
-        void BandR() {
+        void rightLocation() {
             if (targetFound != null) {
-                // if target is parking 2
-                if (targetFound.equals(allTrackables.get(0))) {
-
-                    robot.armUp(6);
-                    Trajectory strafe = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
-                            .strafeTo(new Vector2d(-12.33, 67.33))
-                            .build();
-                    drive.followTrajectory(strafe);
-
-
-                    Trajectory to_junc;
-                        if(conf.isRed()) {
-                            to_junc = drive.trajectoryBuilder(strafe.end())
-                                    .lineTo(new Vector2d(-12.33, 24.22))
-                                    .splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(230.00))
-                                    .build();
-                        }else{
-                            to_junc = drive.trajectoryBuilder(strafe.end())
-                                    .lineTo(new Vector2d(-12.33, 24.22))
-                                    .splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(232.00))
-                                    .build();
-                        }
-                    drive.followTrajectory(to_junc);
-                    robot.armUp(35);
-
-                    Trajectory forward;
-                    if(conf.isRed()){
-                       forward = drive.trajectoryBuilder(to_junc.end())
-                                .forward(3)
-                                .build();
-                    }else {
-                        forward = drive.trajectoryBuilder(to_junc.end())
-                                .forward(4.5)
-                                .build();
-                    }
-                    drive.followTrajectory(forward);
-
-                    sleep(2000);
-                    robot.openClaw();
-                    Trajectory back = drive.trajectoryBuilder(forward.end())
-                            .back(13)
-                            .build();
-                    drive.followTrajectory(back);
-
-                    Trajectory to_pos = drive.trajectoryBuilder(back.end())
-                            .splineTo(new Vector2d(-34.67, 12.22), Math.toRadians(180.00))
-                            .build();
-                    drive.followTrajectory(to_pos);
-
-
-
+                if (parking2()) {
+                   runToRightParking2();
                 }
-                // if target is parking 3
-                else if (targetFound.equals(allTrackables.get(1))) {
-                    robot.armUp(5);
-                    Trajectory strafe = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
-                            .strafeTo(new Vector2d(-64.89,67.70))
-                            .build();
-                    drive.followTrajectory(strafe);
-
-                    Trajectory to_junc;
-                    if(conf.isRed()){
-                        to_junc = drive.trajectoryBuilder(strafe.end())
-                                .splineTo(new Vector2d(-60.89, 35.11), Math.toRadians(-41.63))
-                                .build();
-
-                    }else {
-                        to_junc = drive.trajectoryBuilder(strafe.end())
-                                .splineTo(new Vector2d(-59.67, 35.00), Math.toRadians(-41.63))
-                                .build();
-                    }
-                    drive.followTrajectory(to_junc);
-
-
-                    robot.armUp(12.5);
-                    Trajectory forward = drive.trajectoryBuilder(to_junc.end())
-                            .forward(3)
-                            .build();
-
-                    drive.followTrajectory(forward);
-
-                    sleep(2000);
-                    robot.openClaw();
-
-                    Trajectory back = drive.trajectoryBuilder(forward.end())
-                            .back(6)
-                            .build();
-                    drive.followTrajectory(back);
-
+                else if (parking3()) {
+                   runToRightParking3();
                 }
-                // if target is parking 1
             } else {
-                robot.armUp(5);
-                Trajectory untitled0 = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
-                        .splineTo(new Vector2d(-15.93, 48.44), Math.toRadians(270.00))
-                        .splineTo(new Vector2d(-10.63, 34.93), Math.toRadians(-53.63))
-                        .build();
-                drive.followTrajectory(untitled0);
-
-                robot.armUp(35.5);
-
-                Trajectory forward = drive.trajectoryBuilder(untitled0.end())
-                        .forward(3)
-                        .build();
-                drive.followTrajectory(forward);
-                sleep(2000);
-                robot.openClaw();
-                Trajectory back = drive.trajectoryBuilder(forward.end())
-                        .back(7)
-                        .build();
-                drive.followTrajectory(back);
+                runToRightParking1();
             }
         }
-        //left fuild side movement
-            void BandL(){
+
+            void leftLocation(){
             //change robot starting position
                 Pose2d left_start = new Pose2d(37.33, 67.70, Math.toRadians(270));
                 drive.setPoseEstimate(left_start);
 
                 if (targetFound != null) {
-                    // if target is parking 2
-                    if (targetFound.equals(allTrackables.get(0))) {
-                        //strafe left
-                        Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
-                                .strafeTo(new Vector2d(12.33, 67.33))
-                                .build();
-
-                        Trajectory toLine ;
-                        if(conf.isRed()){
-                            toLine = drive.trajectoryBuilder(strafe.end())
-                                    .lineTo(new Vector2d(12.33, 14.22))
-                                    .build();
-                        }else{
-                            toLine = drive.trajectoryBuilder(strafe.end())
-                                    .lineTo(new Vector2d(12.33, 14.22))
-                                    .build();
-                        }
-                        Trajectory strafe_to_Junc;
-                        if(conf.isRed()){
-                            strafe_to_Junc = drive.trajectoryBuilder(toLine.end())
-                                    .strafeTo(new Vector2d(24.85, 14.89))
-                                    .build();
-                        }else{
-                            strafe_to_Junc =drive.trajectoryBuilder(toLine.end())
-                                    .strafeTo(new Vector2d(24.85, 12.89))
-                                    .build();
-                        }
-
-
-                        Trajectory forward;
-                        if(conf.isRed()){
-                          forward= drive.trajectoryBuilder(strafe_to_Junc.end())
-                                    .forward(3.5)
-                                    .build();
-
-                        } else{
-                           forward = drive.trajectoryBuilder(strafe_to_Junc.end())
-                                    .forward(3)
-                                    .build();
-                        }
-
-                        Trajectory back = drive.trajectoryBuilder(forward.end())
-                                .back(5)
-                                .build();
-
-                        Trajectory lineToStack = drive.trajectoryBuilder(back.end())
-                                .addDisplacementMarker(()->{
-                                    drive.turn(Math.toRadians(90));
-                                })
-                                .lineTo(new Vector2d(56,14))
-                                .build();
-//
-//                        Trajectory pick_up;
-//                        if (conf.isRed()) {
-//                            telemetry.addData("red:","");
-//                            telemetry.update();
-//                            pick_up = drive.trajectoryBuilder(back.end())
-//                                    .splineTo(new Vector2d(34.67, 15.22), Math.toRadians(360.00))
-//                                    .build();
-//                        }else{
-//                            pick_up = drive.trajectoryBuilder(back.end())
-//                                    .splineTo(new Vector2d(34.67, 15.22), Math.toRadians(360.00))
-//                                    .build();
-//                        }
-
-
-                        //run trajectories
-                        robot.armUp(5);
-                        drive.followTrajectory(strafe);
-                        drive.followTrajectory(toLine);
-                        drive.followTrajectory(strafe_to_Junc);
-                        robot.armUp(36);
-                        drive.followTrajectory(forward);
-                        sleep(1000);
-                        robot.openClaw();
-                        drive.followTrajectory(back);
-                       // drive.turn(Math.toRadians(90));
-                        drive.followTrajectory(lineToStack);
-                        //drive.followTrajectory(pick_up);
-
-
-
+                    if (parking2()) {
+                        runToLeftParking2();
                     }
-                    // if target is parking 3
-                    else if (targetFound.equals(allTrackables.get(1))) {
-
-                        robot.armUp(6);
-                        Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
-                                .strafeTo(new Vector2d(12.33, 67.33))
-                                .build();
-                        drive.followTrajectory(strafe);
-
-                        Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
-                                .splineTo(new Vector2d(6.00, 32.33), Math.toRadians(217.54))
-                                .build();
-                        drive.followTrajectory(go_to_junc);
-
-                        robot.armUp(34.5);
-
-//                        Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
-//                                .forward(2)
-//                                .build();
-//                        drive.followTrajectory(forward);
-                        sleep(1000);
-                        robot.openClaw();
-
-                        Trajectory back = drive.trajectoryBuilder(go_to_junc.end())
-                                .back(7)
-                                .build();
-                        drive.followTrajectory(back);
+                    else if (parking3()) {
+                        runToLeftParking3();
                        }
-                    // if target is parking 1
+
                 } else {
-                    robot.armUp(5);
-                    Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
-                            .strafeTo(new Vector2d(64.00, 67.33))
-                            .build();
-                    drive.followTrajectory(strafe);
-
-                    Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
-                            .splineTo(new Vector2d(58.44, 35.11), Math.toRadians(240))
-                            .build();
-                    drive.followTrajectory(go_to_junc);
-
-                    robot.armUp(13);
-
-                    Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
-                            .forward(2.5)
-                            .build();
-                    drive.followTrajectory(forward);
-                    sleep(1000);
-                    robot.openClaw();
-
-                    Trajectory back = drive.trajectoryBuilder(forward.end())
-                            .back(8)
-                            .build();
-                    drive.followTrajectory(back);
+                   runToLeftParking1();
             }
         }
 
+        boolean parking2(){
+            return targetFound.equals(allTrackables.get(0));
+        }
+
+        boolean parking3(){
+            return targetFound.equals(allTrackables.get(1));
+        }
+
+        void runToRightParking3(){
+            robot.armUp(5);
+            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
+                    .strafeTo(new Vector2d(-64.89,67.70)).build();
+            Trajectory to_junc;
+            if(conf.isRed()){
+                to_junc = drive.trajectoryBuilder(strafe.end())
+                        .splineTo(new Vector2d(-60.89, 35.11), Math.toRadians(-41.63)).build();
+            }else {
+                to_junc = drive.trajectoryBuilder(strafe.end())
+                        .splineTo(new Vector2d(-59.67, 35.00), Math.toRadians(-41.63)).build();
+            }
+            robot.armUp(12.5);
+            Trajectory forward = drive.trajectoryBuilder(to_junc.end())
+                    .forward(3).build();
+            Trajectory back = drive.trajectoryBuilder(forward.end())
+                    .back(6).build();
 
 
-//      void RandR(){
-//        if (targetFound != null) {
-//            // if target is parking 2
-//            if (targetFound.equals(allTrackables.get(0)))
-//            {robot.slideRight(30);}
-//            // if target is parking 3
-//            else if (targetFound.equals(allTrackables.get(1))){
-//                robot.slideRight(30); robot.driveForwards(34);}
-//            // if target is parking 1
-//        } else {
-//            robot.slideLeft(24);robot.driveForwards(45.5);}
-//    }
-//    void RandL(){
-//        if (targetFound != null) {
-//            // if target is parking 2
-//            if (targetFound.equals(allTrackables.get(0)))
-//            {robot.slideLeft(30);}
-//            // if target is parking 3
-//            else if (targetFound.equals(allTrackables.get(1))){
-//                robot.slideLeft(30); robot.driveForwards(34);}
-//            // if target is parking 1
-//        } else {
-//            robot.slideRight(24);robot.driveForwards(45.5);}
-//    }
-//
-//    void BandL(){
-//            if (targetFound != null) {
-//                // if target is parking 2
-//                if (targetFound.equals(allTrackables.get(0)))
-//                {robot.slideLeft(30);}
-//                // if target is parking 3
-//                else if (targetFound.equals(allTrackables.get(1))){
-//                    robot.slideLeft(30); robot.driveForwards(34);}
-//                // if target is parking 1
-//            } else {
-//                robot.slideRight(24);robot.driveForwards(45.5);}
-//    }
+        //Running Trajectories
+            drive.followTrajectory(strafe);
+            drive.followTrajectory(to_junc);
+            drive.followTrajectory(forward);
+            sleep(2000);
+            robot.openClaw();
+            drive.followTrajectory(back);
+        }
+        void runToRightParking2() {
 
-//            void level1(){
-//               // robot.moveArm(50);
-//                robot.driveForwards(5);
-//                robot.openClaw();
-//            }
-//            void level2(){
-//               // robot.moveArm(70);
-//                robot.driveForwards(5);
-//                robot.openClaw();
-//            }
-//            void level3(){
-//               // robot.moveArm(90);
-//                robot.driveForwards(5);
-//                robot.openClaw();
-//            }
+            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
+                    .strafeTo(new Vector2d(-12.33, 67.33)).build();
+           Trajectory to_junc;
+            if(conf.isRed()) {
+                to_junc = drive.trajectoryBuilder(strafe.end())
+                        .lineTo(new Vector2d(-12.33, 24.22)).splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(230.00)).build();
+            }else{
+                to_junc = drive.trajectoryBuilder(strafe.end())
+                        .lineTo(new Vector2d(-12.33, 24.22)).splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(232.00)).build();
+            }
+            Trajectory forward;
+            if(conf.isRed()){
+                forward = drive.trajectoryBuilder(to_junc.end())
+                        .forward(3).build();
+            }else {
+                forward = drive.trajectoryBuilder(to_junc.end())
+                        .forward(4.5).build();
+            }
+            Trajectory back = drive.trajectoryBuilder(forward.end())
+                    .back(13).build();
 
+            Trajectory to_pos = drive.trajectoryBuilder(back.end())
+                    .splineTo(new Vector2d(-34.67, 12.22), Math.toRadians(180.00)).build();
+        //Running Trajectories
+            robot.armUp(6);
+            drive.followTrajectory(strafe);
+            drive.followTrajectory(to_junc);
+            robot.armUp(35);
+            drive.followTrajectory(forward);
+            sleep(2000);
+            robot.openClaw();
+            drive.followTrajectory(back);
+            drive.followTrajectory(to_pos);
+        }
+        void runToRightParking1(){
 
+            Trajectory untitled0 = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
+                    .splineTo(new Vector2d(-15.93, 48.44), Math.toRadians(270.00)).splineTo(new Vector2d(-10.63, 34.93), Math.toRadians(-53.63)).build();
+            Trajectory forward = drive.trajectoryBuilder(untitled0.end())
+                    .forward(3).build();
+            Trajectory back = drive.trajectoryBuilder(forward.end())
+                    .back(7).build();
+        //Running Trajectories
+            robot.armUp(5);
+            drive.followTrajectory(untitled0);
+            robot.armUp(35.5);
+            drive.followTrajectory(forward);
+            sleep(2000);
+            robot.openClaw();
+            drive.followTrajectory(back);
+
+        }
+            void runToLeftParking3(){
+            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
+                    .strafeTo(new Vector2d(12.33, 67.33)).build();
+            Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
+                    .splineTo(new Vector2d(6.00, 32.33), Math.toRadians(217.54)).build();
+            Trajectory back = drive.trajectoryBuilder(go_to_junc.end())
+                    .back(7).build();
+
+            //Running trajectories
+            robot.armUp(6);
+            drive.followTrajectory(strafe);
+            drive.followTrajectory(go_to_junc);
+            robot.armUp(34.5);
+            sleep(1000);
+            robot.openClaw();
+            drive.followTrajectory(back);
+
+            }
+
+        void runToLeftParking2(){
+
+            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 61.70, Math.toRadians(270)))
+                    .strafeTo(new Vector2d(12.33, 67.33)).build();
+            Trajectory toLine ;
+            if(conf.isRed()){
+                toLine = drive.trajectoryBuilder(strafe.end())
+                        .lineTo(new Vector2d(12.33, 14.22)).build();
+            }else{
+                toLine = drive.trajectoryBuilder(strafe.end()).
+                        lineTo(new Vector2d(12.33, 14.22)).build();
+            }
+            Trajectory strafe_to_Junc;
+            if(conf.isRed()){
+                strafe_to_Junc = drive.trajectoryBuilder(toLine.end())
+                        .strafeTo(new Vector2d(24.85, 14.89)).build();
+            }else{
+                strafe_to_Junc =drive.trajectoryBuilder(toLine.end())
+                        .strafeTo(new Vector2d(24.85, 12.89)).build();
+            }
+            Trajectory forward;
+            if(conf.isRed()){
+                forward= drive.trajectoryBuilder(strafe_to_Junc.end())
+                        .forward(3.5).build();
+            } else{
+                forward = drive.trajectoryBuilder(strafe_to_Junc.end())
+                        .forward(3).build();
+            }
+            Trajectory back = drive.trajectoryBuilder(forward.end())
+                    .back(5).build();
+            Trajectory lineToStack = drive.trajectoryBuilder(back.end())
+                    .lineToLinearHeading(new Pose2d(56,15, Math.toRadians(0)))
+                    .build();
+
+            //Running trajectories
+            //robot.armUp(5);
+            drive.followTrajectory(strafe);
+            drive.followTrajectory(toLine);
+            drive.followTrajectory(strafe_to_Junc);
+            //robot.armUp(36);
+            drive.followTrajectory(forward);
+            //sleep(1000);
+            robot.openClaw();
+            drive.followTrajectory(back);
+            // drive.turn(Math.toRadians(90));
+            drive.followTrajectory(lineToStack);
+            //drive.followTrajectory(pick_up);
+
+        }
+        void runToLeftParking1(){
+            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
+                    .strafeTo(new Vector2d(64.00, 67.33)).build();
+            Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
+                    .splineTo(new Vector2d(58.44, 35.11), Math.toRadians(240)).build();
+            Trajectory forward = drive.trajectoryBuilder(go_to_junc.end())
+                    .forward(2.5).build();
+            Trajectory back = drive.trajectoryBuilder(forward.end())
+                    .back(8).build();
+        // Runnung Trajectories
+            robot.armUp(5);
+            drive.followTrajectory(strafe);
+            drive.followTrajectory(go_to_junc);
+            robot.armUp(13);
+            drive.followTrajectory(forward);
+            sleep(1000);
+            robot.openClaw();
+            drive.followTrajectory(back);
+
+        }
 
     }
 
 
 
 
-//    void    identifyTarget(int targetIndex, String targetName, float dx, float dy, float dz, float rx, float ry, float rz) {
-//        VuforiaTrackable aTarget = targets.get(targetIndex);
-//        aTarget.setName(targetName);
-//        aTarget.setLocation(OpenGLMatrix.translation(dx, dy, dz)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, rx, ry, rz)));
-//    }
 
-
-        /* Initialize standard Hardware interfaces */
