@@ -192,8 +192,8 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
             // Name and locate each trackable object
            // allTrackables.get(0).setName("parking1");
-            allTrackables.get(0).setName("parking3");
-            allTrackables.get(1).setName("parking2");
+            allTrackables.get(1).setName("parking3");
+            allTrackables.get(0).setName("parking2");
 
             // allTrackables.get(3).setName("parking4");
             //identifyTarget(0, "Red Audience Wall",   -halfField,  -oneAndHalfTile, mmTargetHeight, 90, 0,  90);
@@ -339,14 +339,14 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
                 if (targetFound != null) {
                     if (parking2()) {
-                        runToLeftParking2();
+                        runToLeftParking2(left_start);
                     }
                     else if (parking3()) {
-                        runToLeftParking3();
+                        runToLeftParking3(left_start);
                        }
 
                 } else {
-                   runToLeftParking1();
+                   runToLeftParking1(left_start);
             }
         }
 
@@ -439,8 +439,8 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             drive.followTrajectory(back);
 
         }
-            void runToLeftParking3(){
-            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
+            void runToLeftParking3(Pose2d leftStartinPos){
+            Trajectory strafe = drive.trajectoryBuilder(leftStartinPos)
                     .strafeTo(new Vector2d(12.33, 67.33)).build();
             Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
                     .splineTo(new Vector2d(6.00, 32.33), Math.toRadians(217.54)).build();
@@ -458,18 +458,19 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
             }
 
-        void runToLeftParking2(){
+        void runToLeftParking2(Pose2d leftStartingPos){
 
-            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 61.70, Math.toRadians(270)))
+            Trajectory strafe = drive.trajectoryBuilder(leftStartingPos)
                     .strafeTo(new Vector2d(12.33, 67.33)).build();
             Trajectory toLine ;
             if(conf.isRed()){
                 toLine = drive.trajectoryBuilder(strafe.end())
-                        .lineTo(new Vector2d(12.33, 14.22)).build();
+                        .lineTo(new Vector2d(12.33, 16.22)).build();
             }else{
                 toLine = drive.trajectoryBuilder(strafe.end()).
                         lineTo(new Vector2d(12.33, 14.22)).build();
             }
+
             Trajectory strafe_to_Junc;
             if(conf.isRed()){
                 strafe_to_Junc = drive.trajectoryBuilder(toLine.end())
@@ -488,9 +489,8 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             }
             Trajectory back = drive.trajectoryBuilder(forward.end())
                     .back(5).build();
-            Trajectory lineToStack = drive.trajectoryBuilder(back.end())
-                    .lineToLinearHeading(new Pose2d(56,15, Math.toRadians(0)))
-                    .build();
+//            Trajectory lineToStack = drive.trajectoryBuilder(back.end())
+//                    .build();
 
             //Running trajectories
             //robot.armUp(5);
@@ -498,17 +498,18 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             drive.followTrajectory(toLine);
             drive.followTrajectory(strafe_to_Junc);
             //robot.armUp(36);
-            drive.followTrajectory(forward);
+            //drive.followTrajectory(forward);
             //sleep(1000);
-            robot.openClaw();
-            drive.followTrajectory(back);
-            // drive.turn(Math.toRadians(90));
-            drive.followTrajectory(lineToStack);
+            //robot.openClaw();
+           // drive.followTrajectory(back);
+            //drive.turn(Math.toRadians(90));
+            //drive.update();
+            //.followTrajectory(lineToStack);
             //drive.followTrajectory(pick_up);
 
         }
-        void runToLeftParking1(){
-            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(37.33, 67.70, Math.toRadians(270)))
+        void runToLeftParking1(Pose2d leftStartingPos){
+            Trajectory strafe = drive.trajectoryBuilder(leftStartingPos)
                     .strafeTo(new Vector2d(64.00, 67.33)).build();
             Trajectory go_to_junc = drive.trajectoryBuilder(strafe.end())
                     .splineTo(new Vector2d(58.44, 35.11), Math.toRadians(240)).build();

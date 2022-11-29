@@ -81,7 +81,7 @@
     * is explained below.
     */
 @Disabled
-@Autonomous(name="Autonomous23")
+@Autonomous(name="Autonomous2")
 public class VuforiaAutonomous extends LinearOpMode {
 
         /*
