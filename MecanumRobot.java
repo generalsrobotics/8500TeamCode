@@ -91,7 +91,7 @@
 
     static final double     ARM_COUNTS_PER_MOTOR_REV    = 2786.2 ;    // eg: TETRIX Motor Encoder
     static final double     ARM_DRIVE_GEAR_REDUCTION    = 96.0 / 48.0 ;
-    static final double OPEN_CLAW = 0.3;
+    static final double OPEN_CLAW = 0.4;
     static final double CLOSE_CLAW = 0.85;
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
