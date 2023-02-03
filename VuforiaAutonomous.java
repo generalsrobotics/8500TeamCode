@@ -81,8 +81,8 @@
     * is explained below.
     */
 @Disabled
-@Autonomous(name="Autonomous2")
-public class VuforiaAutonomous extends LinearOpMode {
+@Autonomous(name="TestAuto", group = "test")
+public class  VuforiaAutonomous extends LinearOpMode {
 
         /*
          * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which

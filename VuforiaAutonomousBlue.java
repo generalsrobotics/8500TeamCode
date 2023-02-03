@@ -32,6 +32,9 @@
     import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
     import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XZY;
     import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
+
+    import android.widget.Switch;
+
     import com.acmerobotics.roadrunner.geometry.Pose2d;
     import com.acmerobotics.roadrunner.geometry.Vector2d;
     import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -87,7 +90,7 @@
     * is explained below.
     */
 
-@Autonomous(name="Autonomous")
+@Autonomous(name="Autonomous", group = "Autonomous")
 public class VuforiaAutonomousBlue extends LinearOpMode {
 
         /*
@@ -120,6 +123,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
         private VuforiaTrackables targets = null;
         private WebcamName webcamName = null;
         private MecanumRobot robot;
+        private LED led;
         private List<VuforiaTrackable> allTrackables;
 
         private ElapsedTime runtime = new ElapsedTime();
@@ -127,7 +131,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
         VuforiaTrackable targetFound = null;
 
-        private Pose2d startPose = new Pose2d(-37.33, 61.70, Math.toRadians(270));
+        private Pose2d startPose = new Pose2d(-37.33, 67.70, Math.toRadians(270));
 
         private boolean targetVisible = false;
         private boolean  tr = true;
@@ -142,6 +146,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             robot = new MecanumRobot();
             conf = new CheckConfig();
             conf.Init(this);
+            led = new LED(hardwareMap, this);
 
             /*
              * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
@@ -192,7 +197,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
              */
 
             // Name and locate each trackable object
-           // allTrackables.get(0).setName("parking1");
+            // allTrackables.get(0).setName("parking1");
             allTrackables.get(1).setName("parking3");
             allTrackables.get(0).setName("parking2");
 
@@ -243,12 +248,6 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
              * To restore the normal opmode structure, just un-comment the following line:
              */
 
-             waitForStart();
-
-             if(tr){
-                 runtime.reset();
-                 tr = false;
-             }
             /* Note: To use the remote camera preview:
              * AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
              * Tap the preview window to receive a fresh image.
@@ -258,65 +257,55 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
 
             targets.activate();
+            //led.powerBlueOn();
+            drive.setPoseEstimate(startPose);
+            robot.claw.setPosition(.80);
+
             while (!isStopRequested()) {
-                drive.setPoseEstimate(startPose);
-                robot.claw.setPosition(.80);
+                while(!isStarted()) {
 
-                telemetry.addData("RUNTIME", runtime.seconds());
-                telemetry.update();
-                int count = 0;
-                // check all the trackable targets to see which one (if any) is visible.
-                targetVisible = false;
-                targetFound = null;
-                for (VuforiaTrackable trackable : allTrackables) {
-                    if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-                        telemetry.addData("Visible Target", trackable.getName());
-                        targetVisible = true;
-                        targetName = trackable.getName();
-                        targetFound = trackable;
-                        // getUpdatedRobotLocation() will return null if no new information is available since
-                        // the last time that call was made, or if the trackable is not currently visible.
-                        OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
-                        if (robotLocationTransform != null) {
-                            lastLocation = robotLocationTransform;
+                    telemetry.addData("RUNTIME", runtime.seconds());
+                    telemetry.update();
+                    // check all the trackable targets to see which one (if any) is visible.
+                    targetVisible = false;
+                    targetFound = null;
+                    for (VuforiaTrackable trackable : allTrackables) {
+                        if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                            telemetry.addData("Visible Target", trackable.getName());
+                            targetVisible = true;
+                            targetName = trackable.getName();
+                            targetFound = trackable;
+                            // getUpdatedRobotLocation() will return null if no new information is available since
+                            // the last time that call was made, or if the trackable is not currently visible.
+                            OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
+                            if (robotLocationTransform != null) {
+                                lastLocation = robotLocationTransform;
+                            }
+                            break;
                         }
-                        break;
+
                     }
-                    count++;
+                    // Provide feedback as of which target its has found
+                   // if (targetVisible) led.powerGreenOn();
                 }
-                // Provide feedback as of which target its has found
-            /*
+                boolean ran = true;
+                targets.deactivate();
                 if (targetVisible) {
-                    if (targetFound.equals(allTrackables.get(1))) {// parking 2
-                        telemetry.addData("Robot is parking to %s", targetName);
+                    ran = false;
+                    telemetry.addData("Robot is parking to %s", targetName);
+                    telemetry.update();
+                    park();
+                }
+                else if(ran){//parking 1
+                        telemetry.addLine("Robot is parking in Parking 1 ");
                         telemetry.update();
-                        //waitForStart();
                         park();
-                        break;
-                    } else if (targetFound.equals(allTrackables.get(0))) {//parking 3
-                        telemetry.addData("Robot is parking to %s", targetName);
-                        telemetry.update();
-                        //  waitForStart();
-                        park();
-                        break;
                     }
 
-                    } else if ( runtime.seconds() > 10) {//parking 1
-                        telemetry.addData("Parking 1 ", "");
-                        telemetry.update();
-                        //waitForStart();
-                        park();
-                        break;
-                    }
-
-                */
-//                while(!targetVisible)
-//                    if(runtime.seconds() > 10 )  break;
-//
-                park();
                 break;
+                }
             }
-        }
+
 
 
         void park() {
@@ -328,7 +317,8 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
         // right fuild side movement
         void rightLocation() {
-            runToRightParking2();
+
+                    runToRightParking2();
         }
 
         void leftLocation(){
@@ -338,7 +328,8 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
         }
 
         boolean parking2(){
-            return targetFound.equals(allTrackables.get(0));
+                return targetFound.equals(allTrackables.get(0));
+
         }
         boolean parking3(){
             return targetFound.equals(allTrackables.get(1));
@@ -347,39 +338,83 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
 
         void runToRightParking2() {
 
-            Trajectory strafe = drive.trajectoryBuilder(new Pose2d(-37.33, 67.70, Math.toRadians(270.00)))
+            Trajectory strafe = drive.trajectoryBuilder(startPose)
                     .strafeTo(new Vector2d(-12.33, 67.33)).build();
-           Trajectory to_junc;
-            if(conf.isRed()) {
-                to_junc = drive.trajectoryBuilder(strafe.end())
-                        .lineTo(new Vector2d(-12.33, 24.22)).splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(230.00)).build();
-            }else{
-                to_junc = drive.trajectoryBuilder(strafe.end())
-                        .lineTo(new Vector2d(-12.33, 24.22)).splineTo(new Vector2d(-15.56, 12.22), Math.toRadians(232.00)).build();
-            }
-            Trajectory forward;
+            Trajectory toLine ;
             if(conf.isRed()){
-                forward = drive.trajectoryBuilder(to_junc.end())
-                        .forward(3).build();
-            }else {
-                forward = drive.trajectoryBuilder(to_junc.end())
-                        .forward(4.5).build();
+                toLine = drive.trajectoryBuilder(strafe.end())
+                        .lineTo(new Vector2d(-12.33, 16.22)).build();
+            }else{
+                toLine = drive.trajectoryBuilder(strafe.end()).
+                        lineTo(new Vector2d(-12.33, 14.22)).build();
             }
-            Trajectory back = drive.trajectoryBuilder(forward.end())
-                    .back(13).build();
 
-            Trajectory to_pos = drive.trajectoryBuilder(back.end())
-                    .splineTo(new Vector2d(-34.67, 12.22), Math.toRadians(180.00)).build();
-        //Running Trajectories
+            Trajectory strafe_to_Junc;
+            if(conf.isRed()){
+                strafe_to_Junc = drive.trajectoryBuilder(toLine.end())
+                        .strafeTo(new Vector2d(-24.85, 14.89)).build();
+            }else{
+                strafe_to_Junc =drive.trajectoryBuilder(toLine.end())
+                        .strafeTo(new Vector2d(-24.85, 12.89)).build();
+            }
+            TrajectorySequence forward;
+            if(conf.isRed()){
+                forward= drive.trajectorySequenceBuilder(strafe_to_Junc.end())
+                        .forward(3).addDisplacementMarker(()->{robot.openClaw();robot.armDown(35);}).build();
+            } else{
+                forward = drive.trajectorySequenceBuilder(strafe_to_Junc.end())
+                        .forward(3).addDisplacementMarker(()->{robot.openClaw();robot.armDown(35);}).build();
+            }
+            TrajectorySequence back = drive.trajectorySequenceBuilder(forward.end())
+                    .back(8)
+                    .turn(Math.toRadians(-90))
+                    .build();
+
+            Trajectory lineToStack = drive.trajectoryBuilder(back.end())
+                    .forward(36).build();
+            TrajectorySequence grab = drive.trajectorySequenceBuilder(lineToStack.end())
+                    .forward(1).addDisplacementMarker(()->{robot.closeClaw(); robot.armUp(13);}).build();
+
+            TrajectorySequence medium = drive.trajectorySequenceBuilder(lineToStack.end())
+                    .back(14)
+                    .turn(Math.toRadians(-90)).build();
+
+            Trajectory score_medium = drive.trajectoryBuilder(medium.end())
+                    .forward(4).addDisplacementMarker(()->{robot.openClaw();}).build();
+            //todo: open claw
+//            TrajectorySequence go_back = drive.trajectorySequenceBuilder(score_medium.end())
+//                    .back(4).turn(Math.toRadians(-90)).build();
+//            Trajectory to_stack = drive.trajectoryBuilder(go_back.end())
+//                    .forward(11).build();
+
+
+            //Running trajectories
             robot.armUp(6);
             drive.followTrajectory(strafe);
-            drive.followTrajectory(to_junc);
+            drive.followTrajectory(toLine);
+            drive.followTrajectory(strafe_to_Junc);
             robot.armUp(35);
-            drive.followTrajectory(forward);
-            sleep(2000);
-            robot.openClaw();
-            drive.followTrajectory(back);
-            drive.followTrajectory(to_pos);
+            drive.followTrajectorySequence(forward);
+            drive.followTrajectorySequence(back);
+            //robot.armDown(30);
+            drive.followTrajectory(lineToStack);
+            drive.followTrajectorySequence(grab);
+            drive.followTrajectorySequence(medium);
+            drive.followTrajectory(score_medium);
+
+            TrajectorySequence park =  drive.trajectorySequenceBuilder(score_medium.end())
+                    .back(6).strafeRight(42).build();;
+            if(targetFound !=null)
+                if(parking2()){
+                    park = drive.trajectorySequenceBuilder(score_medium.end())
+                            .back(6).strafeRight(13).build();
+                }else if(parking3()){
+                    park = drive.trajectorySequenceBuilder(score_medium.end())
+                            .back(6).strafeLeft(13).build();
+                }
+
+            drive.followTrajectorySequence(park);
+
         }
 
         void runToLeftParking2(Pose2d leftStartingPos){
@@ -403,34 +438,35 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                 strafe_to_Junc =drive.trajectoryBuilder(toLine.end())
                         .strafeTo(new Vector2d(24.85, 12.89)).build();
             }
-            Trajectory forward;
+            TrajectorySequence forward;
             if(conf.isRed()){
-                forward= drive.trajectoryBuilder(strafe_to_Junc.end())
-                        .forward(3).build();
+                forward= drive.trajectorySequenceBuilder(strafe_to_Junc.end())
+                        .forward(3).addDisplacementMarker(()->{robot.openClaw();robot.armDown(35);}).build();
             } else{
-                forward = drive.trajectoryBuilder(strafe_to_Junc.end())
-                        .forward(3).build();
+                forward = drive.trajectorySequenceBuilder(strafe_to_Junc.end())
+                        .forward(3).addDisplacementMarker(()->{robot.openClaw();robot.armDown(35);}).build();
             }
             TrajectorySequence back = drive.trajectorySequenceBuilder(forward.end())
-                    .back(5)
+                    .back(8)
                     .turn(Math.toRadians(90))
-                    .addDisplacementMarker(()->{robot.openClaw();})
                     .build();
 
             Trajectory lineToStack = drive.trajectoryBuilder(back.end())
-                    .forward(35.5).build();
+                    .forward(36).build();
+            TrajectorySequence grab = drive.trajectorySequenceBuilder(lineToStack.end())
+                    .forward(1).addDisplacementMarker(()->{robot.closeClaw(); robot.armUp(13);}).build();
 
             TrajectorySequence medium = drive.trajectorySequenceBuilder(lineToStack.end())
-                    .back(11)
+                    .back(14)
                     .turn(Math.toRadians(90)).build();
 
              Trajectory score_medium = drive.trajectoryBuilder(medium.end())
-                    .forward(4).build();
+                    .forward(4).addDisplacementMarker(()->{robot.openClaw();}).build();
                     //todo: open claw
-            TrajectorySequence go_back = drive.trajectorySequenceBuilder(score_medium.end())
-                    .back(4).turn(Math.toRadians(-90)).build();
-            Trajectory to_stack = drive.trajectoryBuilder(go_back.end())
-                    .forward(11).build();
+//            TrajectorySequence go_back = drive.trajectorySequenceBuilder(score_medium.end())
+//                    .back(4).turn(Math.toRadians(-90)).build();
+//            Trajectory to_stack = drive.trajectoryBuilder(go_back.end())
+//                    .forward(11).build();
 
 
             //Running trajectories
@@ -439,12 +475,25 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             drive.followTrajectory(toLine);
             drive.followTrajectory(strafe_to_Junc);
             robot.armUp(35);
-            drive.followTrajectory(forward);
+            drive.followTrajectorySequence(forward);
             drive.followTrajectorySequence(back);
+            //robot.armDown(30);
             drive.followTrajectory(lineToStack);
+            drive.followTrajectorySequence(grab);
             drive.followTrajectorySequence(medium);
             drive.followTrajectory(score_medium);
-            drive.followTrajectorySequence(go_back);
+
+            TrajectorySequence park = null;
+            if(parking2()){
+                    park = drive.trajectorySequenceBuilder(score_medium.end())
+                            .back(6).strafeLeft(13).build();
+            }else if(parking3()){
+                park = drive.trajectorySequenceBuilder(score_medium.end())
+                        .back(6).strafeLeft(42).build();
+            }
+            drive.followTrajectorySequence(park);
+
+
 
 
             //robot.armUp(36);

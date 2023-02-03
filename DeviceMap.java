@@ -7,7 +7,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class DeviceMap {
-    private final DcMotor frontLeft,backLeft,frontRight,backRight,arm;
+
+    private final DcMotor frontRight,frontLeft,backLeft,backRight,arm,powerLed,colorLed;
+
+
     private final Servo claw;
     private final DistanceSensor rangeSensor;
 
@@ -19,22 +22,24 @@ public class DeviceMap {
         backRight = map.get(DcMotor.class,"backRight");
         arm = map.get(DcMotor.class,"Arm");
 
-        claw = map.get(Servo.class,"claw");
+        powerLed = map.get(DcMotor.class,"power");
+        colorLed = map.get(DcMotor.class,"LED");
 
+        claw = map.get(Servo.class,"claw");
         rangeSensor = map.get(DistanceSensor.class, "sensor_distance");
     }
 
     // MOTOR GETTERS
-    public DcMotor getFrontLeft(){return frontLeft;}
-    public DcMotor getBackLeft(){return backLeft;}
-    public DcMotor getFrontRight(){return frontRight;}
-    public DcMotor getBackRight(){return backRight;}
-    public DcMotor getArm(){return arm;}
-
-
+    public  DcMotor getFrontLeft(){return frontLeft;}
+    public  DcMotor getBackLeft(){return backLeft;}
+    public  DcMotor getFrontRight(){return frontRight;}
+    public  DcMotor getBackRight(){return backRight;}
+    public  DcMotor getArm(){return arm;}
+    public DcMotor getColorLed(){return colorLed;}
+    public DcMotor getPowerLed(){return powerLed;}
     // SERVO GETTERS
-    public Servo getClaw(){return claw;}
+    public  Servo getClaw(){return claw;}
 
-    public DistanceSensor getRangeSensor(){return rangeSensor;}
+    public  DistanceSensor getRangeSensor(){return rangeSensor;}
 
 }
