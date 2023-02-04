@@ -261,18 +261,21 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             drive.setPoseEstimate(startPose);
             robot.claw.setPosition(.80);
 
+
             while (!isStopRequested()) {
                 while(!isStarted()) {
-
-                    telemetry.addData("RUNTIME", runtime.seconds());
-                    telemetry.update();
-                    // check all the trackable targets to see which one (if any) is visible.
                     targetVisible = false;
                     targetFound = null;
+                    telemetry.addData("RUNTIME", runtime.seconds());
+                    telemetry.update();
+
+                    // check all the trackable targets to see which one (if any) is visible.
+
                     for (VuforiaTrackable trackable : allTrackables) {
                         if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
                             telemetry.addData("Visible Target", trackable.getName());
                             targetVisible = true;
+                            led.found();
                             targetName = trackable.getName();
                             targetFound = trackable;
                             // getUpdatedRobotLocation() will return null if no new information is available since
@@ -285,9 +288,14 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
                         }
 
                     }
+                    if (!targetVisible)// looking for images LED signal
+                        led.looking();
+                    else{led.powerOff();}
                     // Provide feedback as of which target its has found
                    // if (targetVisible) led.powerGreenOn();
                 }
+
+
                 boolean ran = true;
                 targets.deactivate();
                 if (targetVisible) {
@@ -483,13 +491,16 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             drive.followTrajectorySequence(medium);
             drive.followTrajectory(score_medium);
 
-            TrajectorySequence park = null;
-            if(parking2()){
+            TrajectorySequence park =drive.trajectorySequenceBuilder(score_medium.end())
+                    .back(6).strafeRight(13).build();;
+            if(targetFound != null) {
+                if (parking2()) {
                     park = drive.trajectorySequenceBuilder(score_medium.end())
                             .back(6).strafeLeft(13).build();
-            }else if(parking3()){
-                park = drive.trajectorySequenceBuilder(score_medium.end())
-                        .back(6).strafeLeft(42).build();
+                } else if (parking3()) {
+                    park = drive.trajectorySequenceBuilder(score_medium.end())
+                            .back(6).strafeLeft(42).build();
+                }
             }
             drive.followTrajectorySequence(park);
 
@@ -507,6 +518,7 @@ public class VuforiaAutonomousBlue extends LinearOpMode {
             //drive.followTrajectory(pick_up);
 
         }
+
 
     }
 

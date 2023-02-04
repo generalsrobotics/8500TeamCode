@@ -19,22 +19,30 @@ public class LED {
         this.op = op;
     }
 
-    void ready(){
+    void found(){
         powerGreenOn();
     }
+    void looking(){powerBlueOn();}
     void powerGreenOn(){
-        powerOn();
-        colorLed.setPower(-1);
-    }
-    void powerBlueOn(){
         powerOn();
         colorLed.setPower(1);
     }
+    void powerBlueOn(){
+
+        if(runtime.seconds() >= 1.0 && runtime.seconds() <=2.0){
+            powerOn();
+            colorLed.setPower(-1);
+        }else if(runtime.seconds() > 2.0){
+            powerOff();
+            runtime.reset();
+        }
+    }
     void powerOn(){
-        powerLed.setPower(1);
+        powerLed.setPower(-1);
     }
     void powerOff() {
         powerLed.setPower(0);
     }
+    void stop(){runtime.reset();}//
 }
 
